@@ -45,8 +45,7 @@
       droplet:'<path d="M24 3C19 11 9 22 9 30a15 15 0 0 0 30 0C39 22 29 11 24 3Z" fill="#4facf8" stroke="#277bdb" stroke-width="2"/><path d="M18 19c-4 6-5 10-4 14" fill="none" stroke="#d1f0ff" stroke-width="5" stroke-linecap="round"/><ellipse cx="30" cy="37" rx="4" ry="2" fill="#e2f8ff" opacity=".65"/>',
       book:'<path d="M23 12C15 7 9 8 4 10v27c8-3 14-2 20 2 6-4 12-5 20-2V10c-6-2-14-3-21 2Z" fill="#8664eb" stroke="#6445bd" stroke-width="2.3"/><path d="M24 15c-5-4-10-4-16-3v21c6-1 11 0 16 3V15Z" fill="#fff6eb"/><path d="M24 15c5-4 10-4 16-3v21c-6-1-11 0-16 3V15Z" fill="#e7daff"/><path d="M24 16v20" stroke="#8d72e8" stroke-width="2.3"/><path d="M12 18h7M29 18h7M12 23h7M29 23h7" stroke="#b4a3ef" stroke-width="1.8" stroke-linecap="round"/>',
       dumbbell:'<rect x="4" y="16" width="8" height="17" rx="3" fill="#ffb69a" stroke="#f27e6e" stroke-width="2"/><rect x="36" y="16" width="8" height="17" rx="3" fill="#ffb69a" stroke="#f27e6e" stroke-width="2"/><rect x="10" y="12" width="9" height="24" rx="3" fill="#fd8478" stroke="#e75c60" stroke-width="2"/><rect x="29" y="12" width="9" height="24" rx="3" fill="#fd8478" stroke="#e75c60" stroke-width="2"/><rect x="18" y="21" width="12" height="7" rx="3" fill="#b75a83"/>',
-      // The native lotus emoji (🪷) is missing from several emoji fonts. Use a hand-drawn SVG lotus instead.
-      leaf:'<path d="M23.7 37C15.2 37.5 6.2 32.7 6.8 20c9.2 1.9 15.8 6.9 16.9 17Z" fill="#5bd3be" stroke="#269f91" stroke-width="1.3"/><path d="M24.3 37C32.8 37.5 41.8 32.7 41.2 20c-9.2 1.9-15.8 6.9-16.9 17Z" fill="#60c4e8" stroke="#319eae" stroke-width="1.3"/><path d="M23.8 39.4C15.5 44.2 7.2 41.6 3 32c9.4-4.5 18.1-.8 20.8 7.4Z" fill="#41b99f" stroke="#269f91" stroke-width="1.3"/><path d="M24.2 39.4C32.5 44.2 40.8 41.6 45 32c-9.4-4.5-18.1-.8-20.8 7.4Z" fill="#47c6b1" stroke="#269f91" stroke-width="1.3"/><path d="M24 38C15.2 30.3 15.8 17.4 24 9c8.2 8.4 8.8 21.3 0 29Z" fill="#92e7c7" stroke="#37b89e" stroke-width="1.7"/><path d="M24 15c-4.3 6.8-4.3 13.4 0 19" fill="none" stroke="#effff8" stroke-width="2.4" stroke-linecap="round" opacity=".82"/><path d="M12 42.2c7.7 3.4 16.3 3.4 24 0" fill="none" stroke="#1d9b88" stroke-width="2.5" stroke-linecap="round"/>',
+      leaf:'<path d="M24 43C4 34 6 10 30 7c10-1 14-2 14-2 0 19-5 34-20 38Z" fill="#3ecbb0" stroke="#22a98b" stroke-width="2"/><path d="M13 36c6-12 13-15 23-22" stroke="#f0ffee" stroke-width="3.2" fill="none" stroke-linecap="round"/><path d="M23 26 22 17M27 23l9 1" stroke="#b9ffe7" stroke-width="2" fill="none"/>',
       sun:'<circle cx="24" cy="24" r="11" fill="#ffd063" stroke="#efad36" stroke-width="2"/><circle cx="21" cy="21" r="4" fill="#ffeb9b" opacity=".9"/><path d="M24 3v6M24 39v6M3 24h6M39 24h6M9 9l5 5M34 34l5 5M9 39l5-5M34 14l5-5" stroke="#ffbb54" stroke-width="3.5" stroke-linecap="round"/>',
       moon:'<path d="M33 6C11 4 5 30 18 39c10 8 26 0 26-12-12 8-26-8-11-21Z" fill="#9e91ee" stroke="#7d71d5" stroke-width="2"/><path d="m11 8 1.5 4L17 14l-4.5 1.5L11 20l-1.5-4.5L5 14l4.5-2L11 8ZM35 3l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3Z" fill="#ffda7c"/>',
       brain:'<path d="M23 10C12 1 4 12 8 20c-9 8 2 21 13 17 1 8 7 7 9 0 12 3 21-12 10-18 2-11-11-18-17-9Z" fill="#c9a2f1" stroke="#a67ad9" stroke-width="2.5"/><path d="M24 12v24M17 15c6 2 6 7 4 11M31 18c-6 1-6 5-5 8M13 28c4-3 7-2 8 1M35 29c-4-4-7-2-9 1" stroke="#e9d5ff" fill="none" stroke-width="2.5" stroke-linecap="round"/>',
@@ -70,16 +69,20 @@
     const emojiIds=new Set(iconCatalog.map(i=>i.id));
     function emojiFor(name){return nativeEmoji[name] || (typeof name==='string'&&name.startsWith('emoji:')&&emojiIds.has(name)?name.slice(6):null)}
     const oldLivelyIcon=livelyIcon;
-    livelyIcon=function(name,size=27){
-      // Preserve stored icon IDs but render the Meditation lotus as SVG on every device.
-      // This avoids the missing-glyph square for the 🪷 emoji on Windows/Android.
-      if(name==='leaf'||name==='emoji:🪷')return oldLivelyIcon('leaf',size);
-      const emoji=emojiFor(name);
-      return emoji?`<span class="habit-emoji" style="--emoji-size:${size}px" aria-hidden="true">${emoji}</span>`:oldLivelyIcon(name,size);
-    };
-    function categoryEmoji(name){return ({Health:'💗',Mind:'🧠',Lifestyle:'🌿'})[name]||'✨'}
+    livelyIcon=function(name,size=27){const emoji=emojiFor(name);return emoji?`<span class="habit-emoji" style="--emoji-size:${size}px" aria-hidden="true">${emoji}</span>`:oldLivelyIcon(name,size)};
     const DEFAULT_CATEGORIES=['Health','Mind','Lifestyle'];
+    const DEFAULT_CATEGORY_ICONS={Health:'heart',Mind:'brain',Lifestyle:'leaf'};
+    const CATEGORY_ICON_CHOICES=['heart','brain','leaf','sparkles','book','droplet','sun','moon','clock','target'];
     function cleanCategoryName(name){return String(name||'').trim().replace(/\s+/g,' ').slice(0,24)}
+    function normalizeCategoryIcons(saved={},categories=[]){
+      const base={...DEFAULT_CATEGORY_ICONS};
+      if(saved&&typeof saved==='object') for(const [name,iconId] of Object.entries(saved)){const clean=cleanCategoryName(name);if(clean&&typeof iconId==='string') base[clean]=iconId;}
+      for(const c of categories){const clean=cleanCategoryName(c);if(clean&&!base[clean]) base[clean]='sparkles';}
+      return base;
+    }
+    function categoryIconId(name){return (state?.categoryIcons?.[name])||DEFAULT_CATEGORY_ICONS[name]||'sparkles'}
+    function categoryIconMarkup(name,size=18){return livelyIcon(categoryIconId(name),size)}
+    function categoryEmoji(name){return emojiFor(categoryIconId(name))||'✨'}
     function mergedCategories(saved=[],habits=[]){
       const result=[...DEFAULT_CATEGORIES];
       for(const value of [...(Array.isArray(saved)?saved:[]),...habits.map(h=>h.category)]){
@@ -148,16 +151,16 @@
         {water:8,read:15,workout:30,meditate:10,stretch:10,learn:10,walk:6000,journal:1,sleep:7,detox:60}
       ];
       for(let i=0;i<7;i++) logs[dateKey(dateOffset(now,-i))]=samples[i];
-      return {habits:structuredClone(defaultHabits),categories:[...DEFAULT_CATEGORIES],logs,theme:'light',demo:true,awards:[]};
+      return {habits:structuredClone(defaultHabits),categories:[...DEFAULT_CATEGORIES],categoryIcons:{...DEFAULT_CATEGORY_ICONS},logs,theme:'light',demo:true,awards:[]};
     };
     function loadState(){
       try{
         const raw=localStorage.getItem(STORAGE_KEY);
-        if(raw){const loaded=JSON.parse(raw);if(Array.isArray(loaded.habits)&&loaded.logs&&typeof loaded.logs==='object')return {habits:loaded.habits,categories:mergedCategories(loaded.categories,loaded.habits),logs:loaded.logs,theme:loaded.theme==='dark'?'dark':'light',demo:!!loaded.demo,awards:Array.isArray(loaded.awards)?loaded.awards.filter(v=>MILESTONES.some(m=>m.days===v)):[]};}
+        if(raw){const loaded=JSON.parse(raw);if(Array.isArray(loaded.habits)&&loaded.logs&&typeof loaded.logs==='object'){const categories=mergedCategories(loaded.categories,loaded.habits);return {habits:loaded.habits,categories,categoryIcons:normalizeCategoryIcons(loaded.categoryIcons,categories),logs:loaded.logs,theme:loaded.theme==='dark'?'dark':'light',demo:!!loaded.demo,awards:Array.isArray(loaded.awards)?loaded.awards.filter(v=>MILESTONES.some(m=>m.days===v)):[]};}}
       }catch(e){console.warn('Could not load saved tracker data',e)}
       return initialDemo();
     }
-    let state=loadState(),selectedDate=today(),calendarMonth=new Date(today().getFullYear(),today().getMonth(),1),filter='All',search='',editingId=null,chosenIcon='sparkles',chosenColor=colorChoices[0],chosenCategory='Health',iconGroup='All',emojiSearch='',toastTimeout;
+    let state=loadState(),selectedDate=today(),calendarMonth=new Date(today().getFullYear(),today().getMonth(),1),filter='All',search='',editingId=null,chosenIcon='sparkles',chosenColor=colorChoices[0],chosenCategory='Health',chosenCategoryIcon='sparkles',iconGroup='All',emojiSearch='',toastTimeout;
     function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){toast('Browser storage is unavailable. Export a backup to save changes.')}}
     function getAmount(date,id){return Math.max(0,validNumber((state.logs[dateKey(date)]||{})[id]))}
     function completed(date,h){return getAmount(date,h.id)>=h.goal}
@@ -227,18 +230,13 @@
       const first=startOfWeek(date),days=Array.from({length:7},(_,i)=>dateOffset(first,i)),included=days.filter(d=>dayDiff(d,today())<=0),n=included.length||1;
       return {days,avg:Math.round(included.reduce((s,d)=>s+dayStats(d).percent,0)/n),active:included.filter(d=>dayStats(d).active).length};
     }
-    function setTheme(value){state.theme=value==='dark'?'dark':'light';document.body.classList.toggle('dark',state.theme==='dark');$('#theme-toggle-icon').innerHTML=icon(state.theme==='dark'?'sun':'moon');$('#theme-toggle').setAttribute('aria-label',state.theme==='dark'?'Switch to light mode':'Switch to dark mode');$('#theme-toggle').title=state.theme==='dark'?'Switch to light mode':'Switch to dark mode';$('#settings-dark-toggle').checked=state.theme==='dark';document.querySelector('meta[name="theme-color"]')?.setAttribute('content',state.theme==='dark'?'#141620':'#f7f8fc');save()}
+    function setTheme(value){state.theme=value==='dark'?'dark':'light';document.body.classList.toggle('dark',state.theme==='dark');$('#theme-toggle-icon').innerHTML=icon(state.theme==='dark'?'sun':'moon');$('#settings-dark-toggle').checked=state.theme==='dark';save()}
     function toast(message){const el=$('#toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2800)}
     function renderHeader(){
       const diff=dayDiff(selectedDate,today()),isToday=diff===0;
       $('#top-date-label').textContent=formatDay(today());
       $('#hero-title').innerHTML=(isToday?'Make today count':diff<0?'Review your progress':'Plan your next win')+' <span aria-hidden="true">✦</span>';
-      const daily=dayStats(selectedDate);
-      $('#hero-subtitle').textContent=isToday?
-        (daily.total>0&&daily.done===daily.total?'Your list is complete. Take a second to enjoy it.':
-         daily.done>0?`${daily.done} of ${daily.total} habits done. A little progress looks good on you.`:
-         'A new day, a fresh page. Start with just one thing.'):
-        `${formatDay(selectedDate)} · Your habits, your pace.`;
+      $('#hero-subtitle').textContent=isToday?'Keep showing up. Every small step is a win.':`${formatDay(selectedDate)} · Your habits, your pace.`;
       $('#today-button').textContent=isToday?'Today':formatShort(selectedDate);
       $('#habit-day-label').textContent=`${isToday?'Today':formatShort(selectedDate)} · Tap + to log progress or ✓ to finish a habit.`;
       $('#demo-strip').classList.toggle('hidden',!state.demo);
@@ -246,8 +244,7 @@
     function renderStats(){
       const s=dayStats(selectedDate),week=weekStats(selectedDate),streak=currentStreak();
       $('#completion-count').innerHTML=`${s.done} <span style="font-size:17px;letter-spacing:-.4px;color:var(--ink-light);font-weight:600">/ ${s.total}</span>`;
-      $('#completion-desc').textContent=s.total>0&&s.done===s.total?'Everything checked off. Beautiful work.':`Habits completed ${dayDiff(selectedDate,today())===0?'today':'on this day'}`;
-      $('#global-ring').setAttribute('role','progressbar');$('#global-ring').setAttribute('aria-label','Daily habit completion');$('#global-ring').setAttribute('aria-valuemin','0');$('#global-ring').setAttribute('aria-valuemax','100');$('#global-ring').setAttribute('aria-valuenow',String(s.percent));
+      $('#completion-desc').textContent=`Habits completed ${dayDiff(selectedDate,today())===0?'today':'on this day'}`;
       $('#global-percent').textContent=s.percent+'%';$('#global-ring').style.setProperty('--pct',s.percent);
       $('.completion-stat').classList.toggle('day-all-complete',s.total>0&&s.done===s.total);
       $('#streak-value').textContent=streak;
@@ -260,7 +257,7 @@
       $('#streak-stat-flame').style.opacity=streak?1:.35;
       $('#streak-tier-name').textContent=tier?`${tier.name} ${tier.days}d`:'No badge yet';
       $('#streak-next').textContent=next?`${Math.max(0,next.days-streak)} more consecutive ${next.days-streak===1?'day':'days'} to your ${next.name} badge`:'The highest flame is yours! Keep going.';
-      $('#weekly-stat').textContent=week.avg;$('#weekly-orb').style.setProperty('--pct',week.avg);$('#weekly-orb').setAttribute('role','img');$('#weekly-orb').setAttribute('aria-label',`${week.avg}% average weekly progress`);$('#weekly-progress-track').style.width=week.avg+'%';
+      $('#weekly-stat').textContent=week.avg;$('#weekly-orb').style.setProperty('--pct',week.avg);$('#weekly-progress-track').style.width=week.avg+'%';
       $('#weekly-progress-track').parentElement.classList.toggle('week-perfect',week.avg===100);
       $('#weekly-note').textContent=`${week.active} active ${week.active===1?'day':'days'} this week`;
     }
@@ -378,21 +375,26 @@
         toast('Perfect day! All your habits are complete ✨');
       }
       syncAwards(true);
-      renderBadges();renderStats();renderHeader();
+      renderBadges();renderStats();
     }
     function changeDate(date){selectedDate=new Date(date.getFullYear(),date.getMonth(),date.getDate());calendarMonth=new Date(selectedDate.getFullYear(),selectedDate.getMonth(),1);render()}
     function setCategory(name){
       chosenCategory=name;
       $('#habit-category-input').value=name;
       $('#category-selected-name').textContent=name;
-      $('#category-selected-icon').textContent=categoryEmoji(name);
+      $('#category-selected-icon').innerHTML=categoryIconMarkup(name,18);
       renderCategoryOptions();
     }
     function renderCategoryOptions(){
       $('#category-options').innerHTML=state.categories.map(c=>{
         const safe=escapeHTML(c),selected=c===chosenCategory,removable=!DEFAULT_CATEGORIES.includes(c);
-        return `<div class="category-option-row"><button type="button" role="option" class="category-option ${selected?'selected':''}" data-category="${safe}" aria-selected="${selected}" tabindex="${selected?0:-1}"><span class="cat-emoji">${categoryEmoji(c)}</span><span class="cat-label">${safe}</span>${selected?`<span class="category-check">${icon('check',16)}</span>`:''}</button>${removable?`<button type="button" class="category-delete" data-delete-category="${safe}" aria-label="Delete ${safe} category" title="Delete ${safe}">${icon('trash',15)}</button>`:''}</div>`;
+        return `<div class="category-option-row"><button type="button" role="option" class="category-option ${selected?'selected':''}" data-category="${safe}" aria-selected="${selected}" tabindex="${selected?0:-1}"><span class="cat-emoji">${categoryIconMarkup(c,18)}</span><span class="cat-label">${safe}</span>${selected?`<span class="category-check">${icon('check',16)}</span>`:''}</button>${removable?`<button type="button" class="category-delete" data-delete-category="${safe}" aria-label="Delete ${safe} category" title="Delete ${safe}">${icon('trash',15)}</button>`:''}</div>`;
       }).join('');
+    }
+    function renderCategoryIconChoices(){
+      const host=$('#category-icon-picker');
+      if(!host)return;
+      host.innerHTML=CATEGORY_ICON_CHOICES.map(id=>`<button type="button" class="category-icon-choice ${chosenCategoryIcon===id?'active':''}" data-category-icon="${id}" aria-label="${id} icon" aria-pressed="${chosenCategoryIcon===id}">${livelyIcon(id,18)}</button>`).join('');
     }
     function removeCategory(name){
       if(!state.categories.includes(name)||DEFAULT_CATEGORIES.includes(name))return;
@@ -401,8 +403,8 @@
       if(!window.confirm(question))return;
       // Reassign first so mergedCategories does not recreate the deleted name.
       for(const h of state.habits)if(h.category===name)h.category='Lifestyle';
-      state.categories=state.categories.filter(c=>c!==name);
-      if(chosenCategory===name){chosenCategory='Lifestyle';$('#habit-category-input').value='Lifestyle';$('#category-selected-name').textContent='Lifestyle';$('#category-selected-icon').textContent=categoryEmoji('Lifestyle')}
+      state.categories=state.categories.filter(c=>c!==name);delete state.categoryIcons[name];
+      if(chosenCategory===name){chosenCategory='Lifestyle';$('#habit-category-input').value='Lifestyle';$('#category-selected-name').textContent='Lifestyle';$('#category-selected-icon').innerHTML=categoryIconMarkup('Lifestyle',18)}
       if(filter===name)filter='All';
       save();renderCategoryOptions();renderHabits();
       $('#category-feedback').textContent='';
@@ -412,7 +414,7 @@
       $('#category-popover').classList.toggle('hidden',!open);
       $('#habit-category-trigger').classList.toggle('open',open);
       $('#habit-category-trigger').setAttribute('aria-expanded',String(open));
-      if(!open){$('#category-feedback').textContent='';$('#new-category-input').value='';}
+      if(!open){$('#category-feedback').textContent='';$('#new-category-input').value='';chosenCategoryIcon='sparkles';renderCategoryIconChoices();}
     }
     function addCategory(){
       const input=$('#new-category-input'),raw=input.value.trim(),name=cleanCategoryName(raw);
@@ -423,18 +425,18 @@
       const existing=state.categories.find(c=>c.toLocaleLowerCase()===name.toLocaleLowerCase());
       if(existing){setCategory(existing);setCategoryMenu(false);toast(`Using ${existing}`);return;}
       if(state.categories.length>=60){feedback.textContent='Category limit reached.';return;}
-      state.categories.push(name);setCategory(name);setCategoryMenu(false);save();renderHabits();toast(`${name} category created!`);
+      state.categories.push(name);state.categoryIcons[name]=chosenCategoryIcon;setCategory(name);setCategoryMenu(false);save();renderHabits();toast(`${name} category created!`);
     }
     function openHabit(id=null){
       editingId=id;const h=id?state.habits.find(h=>h.id===id):null;
       chosenIcon=h?.icon||'sparkles';chosenColor=h?.color||colorChoices[0];
-      chosenCategory=h?.category||'Health';iconGroup='All';emojiSearch='';
+      chosenCategory=h?.category||'Health';chosenCategoryIcon=categoryIconId(chosenCategory);iconGroup='All';emojiSearch='';
       $('#habit-modal-title').textContent=h?'Edit habit':'Create a habit';$('#save-habit-label').textContent=h?'Save changes':'Create habit';
       $('#delete-habit').classList.toggle('hidden',!h);
       $('#habit-name-input').value=h?.name||'';$('#habit-unit-input').value=h?.unit||'time';
       $('#habit-goal-input').value=h?.goal||1;$('#habit-step-input').value=h?.step||1;
       $('#emoji-search-input').value='';setCategoryMenu(false);setCategory(chosenCategory);
-      renderPickers();$('#habit-modal-backdrop').classList.remove('hidden');$('#habit-name-input').focus();
+      renderPickers();renderCategoryIconChoices();$('#habit-modal-backdrop').classList.remove('hidden');$('#habit-name-input').focus();
     }
     function renderPickers(){
       const groups=['All','Wellness','Fitness','Focus','Lifestyle'];
@@ -481,23 +483,10 @@
       if(e.key==='Escape'){e.stopPropagation();setCategoryMenu(false);$('#habit-category-trigger').focus()}
     });
     $('#category-add').addEventListener('click',addCategory);
+    $('#category-icon-picker').addEventListener('click',e=>{const b=e.target.closest('[data-category-icon]');if(!b)return;chosenCategoryIcon=b.dataset.categoryIcon;renderCategoryIconChoices();});
     $('#new-category-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCategory()}});
     document.addEventListener('pointerdown',e=>{if(!$('#category-select-wrap').contains(e.target))setCategoryMenu(false)});
     $('#icon-picker').addEventListener('click',e=>{const b=e.target.closest('[data-icon-choice]');if(b){chosenIcon=b.dataset.iconChoice;renderPickers()}});
-    // Small, discoverable keyboard affordances; never intercept typing in forms.
-    document.addEventListener('keydown',e=>{
-      const target=e.target;
-      const typing=target instanceof HTMLElement && (target.matches('input, textarea, select') || target.isContentEditable);
-      const overlayOpen=[...document.querySelectorAll('.modal-backdrop,.streak-celebration')].some(el=>!el.classList.contains('hidden'));
-      if(e.key==='/' && !typing && !overlayOpen && !e.ctrlKey && !e.metaKey && !e.altKey && !e.repeat){
-        e.preventDefault();document.querySelector('#habit-search')?.focus();
-      }
-      if(e.key==='Escape' && target?.id==='habit-search'){target.blur();}
-    });
-    $('#footer-today')?.addEventListener('click',()=>{
-      changeDate(today());
-      document.querySelector('#overview')?.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'});
-    });
     $('#emoji-filters').addEventListener('click',e=>{const b=e.target.closest('[data-emoji-group]');if(b){iconGroup=b.dataset.emojiGroup;renderPickers()}});
     $('#emoji-search-input').addEventListener('input',e=>{emojiSearch=e.target.value.toLowerCase().trim();renderPickers()});
     $('#color-picker').addEventListener('click',e=>{const b=e.target.closest('[data-color-choice]');if(b){chosenColor=b.dataset.colorChoice;renderPickers()}});
@@ -532,7 +521,7 @@
     $('#celebration-backdrop').addEventListener('click',closeCelebration);
     $('#reset-data').addEventListener('click',()=>{
       if(!confirm('Reset all habits and progress? This cannot be undone unless you have a backup.'))return;
-      const theme=state.theme;state={habits:structuredClone(defaultHabits),categories:[...DEFAULT_CATEGORIES],logs:{},demo:false,theme,awards:[]};
+      const theme=state.theme;state={habits:structuredClone(defaultHabits),categories:[...DEFAULT_CATEGORIES],categoryIcons:{...DEFAULT_CATEGORY_ICONS},logs:{},demo:false,theme,awards:[]};
       filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Tracker reset. A fresh chapter begins!');
     });
     $('#export-data').addEventListener('click',()=>{
@@ -549,7 +538,7 @@
         const cleaned=data.habits.map((h,i)=>({id:String(h.id||'import'+i).slice(0,100),name:String(h.name||'Habit').slice(0,48),category:cleanCategoryName(h.category)||'Lifestyle',icon:iconChoices.includes(h.icon)?h.icon:'sparkles',color:colorChoices.includes(h.color)?h.color:colorChoices[0],goal:clamp(Math.round(validNumber(h.goal)),1,100000),step:clamp(Math.round(validNumber(h.step)),1,100000),unit:String(h.unit||'time').slice(0,20)}));
         if(!confirm('Import this backup? Your current habits and history will be replaced.'))return;
         const cleanLogs={};for(const [key,log] of Object.entries(data.logs)){if(!/^\d{4}-\d{2}-\d{2}$/.test(key)||!log||typeof log!=='object')continue;cleanLogs[key]={};for(const h of cleaned){const n=Number(log[h.id]);if(Number.isFinite(n))cleanLogs[key][h.id]=clamp(n,0,h.goal)}}
-        state={habits:cleaned,categories:mergedCategories(data.categories,cleaned),logs:cleanLogs,theme:data.theme==='dark'?'dark':'light',demo:false,awards:Array.isArray(data.awards)?data.awards.filter(v=>MILESTONES.some(t=>t.days===v)):[]};syncAwards(false);setTheme(state.theme);filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Backup imported successfully!');
+        const categories=mergedCategories(data.categories,cleaned);state={habits:cleaned,categories,categoryIcons:normalizeCategoryIcons(data.categoryIcons,categories),logs:cleanLogs,theme:data.theme==='dark'?'dark':'light',demo:false,awards:Array.isArray(data.awards)?data.awards.filter(v=>MILESTONES.some(t=>t.days===v)):[]};syncAwards(false);setTheme(state.theme);filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Backup imported successfully!');
       }catch(err){toast(err.message||'Could not read backup.')}finally{e.target.value=''}
     });
     document.querySelectorAll('.modal-backdrop').forEach(backdrop=>backdrop.addEventListener('click',e=>{if(e.target===backdrop)backdrop.classList.add('hidden')}));

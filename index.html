@@ -3,25 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#f7f8fc" id="theme-color" />
-  <meta name="color-scheme" content="light dark" />
-  <meta name="description" content="Make today count. Track your habits, celebrate your small wins, and grow a streak worth keeping with Dayflow." />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="Dayflow" />
-  <meta property="og:title" content="Dayflow — Make today count" />
-  <meta property="og:description" content="A little progress every day. Track habits, see your streaks grow, and celebrate the days you show up." />
-  <meta property="og:image" content="https://liszttrades.github.io/dayflow-habit-tracker/og-dayflow.png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <title>Dayflow — Make today count</title>
-  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-  <link rel="manifest" href="./manifest.webmanifest" />
-  <link rel="apple-touch-icon" href="./app-icon.png" />
-  <link rel="stylesheet" href="./style.css?v=6">
+  <meta name="theme-color" content="#f7f8fc" />
+  <meta name="description" content="Dayflow — your personal habit tracker with daily progress rings, calendar, weekly insights, and streaks." />
+  <title>Dayflow — Make every day count</title>
+  <link rel="stylesheet" href="./style.css?v=5">
 </head>
 <body>
-  <a class="skip-link" href="#habits">Skip to your habits</a>
   <div class="app">
     <div class="mobile-scrim" id="mobile-scrim"></div>
     <aside class="sidebar" id="sidebar" aria-label="Main navigation">
@@ -113,7 +100,7 @@
             </div>
             <div class="filter-row">
               <div class="filters" id="habit-filters" role="group" aria-label="Filter habits by category"></div>
-              <label class="search" title="Press / to search habits"><span data-icon="search"></span><input id="habit-search" placeholder="Search habits" aria-label="Search habits" maxlength="100"><kbd class="search-shortcut" aria-hidden="true">/</kbd></label>
+              <label class="search"><span data-icon="search"></span><input id="habit-search" placeholder="Search habits" aria-label="Search habits" maxlength="100"></label>
             </div>
             <div class="habit-list" id="habit-list" aria-live="polite"></div>
             <div class="list-footer"><span data-icon="heart"></span> Consistency is more important than perfection.</div>
@@ -145,10 +132,7 @@
             <div class="encourage"><span data-icon="sparkles"></span><strong>You're growing every day.</strong><p>You don't have to be perfect. You just have to keep going, one habit at a time.</p></div>
           </div>
         </div>
-        <footer class="site-foot" aria-label="About Dayflow">
-          <div class="footer-copy"><span class="footer-monogram" aria-hidden="true">✳</span><div><strong>Small steps count.</strong><span>Dayflow is your quiet corner for showing up.</span></div></div>
-          <div class="footer-actions"><span class="footer-local"><span class="footer-status-dot" aria-hidden="true"></span> Saved on this device</span><button type="button" id="footer-today" class="footer-return">Back to today <span aria-hidden="true">↗</span></button></div>
-        </footer>
+        <footer class="site-foot">Made for your better days · Your progress is saved on this device.</footer>
       </div>
     </main>
   </div>
@@ -169,6 +153,10 @@
                 <div id="category-options" class="category-options" role="listbox" aria-label="Categories"></div>
                 <div class="category-create">
                   <label for="new-category-input">+ Create your own</label>
+                  <div class="category-icon-create">
+                    <div class="category-icon-label">Choose an icon</div>
+                    <div class="category-icon-picker" id="category-icon-picker" role="group" aria-label="Choose a category icon"></div>
+                  </div>
                   <div class="category-create-row"><input id="new-category-input" type="text" placeholder="e.g. Creative" maxlength="24" autocomplete="off"/><button type="button" id="category-add" aria-label="Add new category" title="Add category"><span data-icon="plus"></span> Add</button></div>
                   <p id="category-feedback" class="category-feedback" role="status" aria-live="polite"></p>
                 </div>
@@ -226,6 +214,6 @@
   </div>
   <div id="effect-layer" class="effect-layer" aria-hidden="true"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script.js?v=6" defer></script>
+  <script src="./script.js?v=5" defer></script>
 </body>
 </html>
