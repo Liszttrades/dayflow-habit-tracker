@@ -17,6 +17,7 @@ A responsive, standalone habit-tracking website built with HTML, CSS, and JavaSc
 - Weekly completion chart, streaks, and top habit rankings
 - Search and category filters, light/dark theme, mobile-friendly layout
 - Automatic browser storage, JSON backup download, and backup restore
+- Full-width, comfortable desktop layout with enlarged cards, calendars, habit rings, and progress bars
 - No external services or tracking
 
 ## Hosting on GitHub Pages

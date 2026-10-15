@@ -219,6 +219,129 @@
     @media (max-width:1100px){.content{grid-template-columns:minmax(0,1fr)}.right-rail{grid-template-columns:1fr 1fr}.right-rail .encourage{grid-column:1/-1}.stats{grid-template-columns:1.3fr 1fr 1fr}.calendar-grid{gap:5px}.right-rail .leader-panel{grid-column:1/-1}.leader-panel #leader-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));column-gap:15px}}
     @media (max-width:790px){.sidebar{position:fixed;left:0;top:0;bottom:0;transform:translateX(-105%);transition:transform .2s;width:250px;box-shadow:10px 0 40px #0002}.sidebar.open{transform:translateX(0)}.mobile-scrim.show{display:block;position:fixed;inset:0;background:#0006;z-index:9}.mobile-menu{display:grid}.main{width:100%;padding:0 18px 45px}.topbar{height:71px}.top-date{display:none}.hero{padding-top:26px}h1{font-size:29px}.stats{grid-template-columns:1.2fr 1fr}.stats .stat-card:last-child{grid-column:1/-1;min-height:112px}.stats .stat-card:last-child .stat-value{margin-top:9px}.stat-card{min-height:138px}}
     @media (max-width:540px){.main{padding:0 14px 32px}.topbar{height:64px}.crumbs{font-size:11px}.top-actions .primary-btn > span:last-child{display:none}.top-actions .primary-btn > span:first-child{display:flex}.top-actions .primary-btn{width:36px;height:36px;padding:0}.hero{align-items:flex-start;flex-direction:column;gap:15px;padding-top:24px}.hero h1{font-size:30px;margin:8px 0 6px}.hero p{font-size:12px}.date-navigator{align-self:flex-start}.stats{gap:9px;grid-template-columns:1fr 1fr}.stat-card{padding:15px;border-radius:16px;min-height:135px}.completion-stat{grid-column:1/-1;min-height:143px}.stat-value{font-size:31px}.global-ring{width:93px;height:93px;flex-basis:93px;padding:8px}.global-ring-inner strong{font-size:21px}.stat-label{font-size:11px}.stats .stat-card:last-child{grid-column:auto;min-height:135px}.stat-decoration{width:28px;height:28px;border-radius:9px}.stat-description,.stat-detail{font-size:10px}.content{gap:14px}.habits-panel{padding:18px 13px 9px;border-radius:16px}.heading-title h2{font-size:16px}.filter-row{flex-direction:column;align-items:stretch;margin-top:16px}.filters{width:100%}.filter{flex:1}.search{max-width:none;width:100%}.habit-item{gap:9px;min-height:83px;padding:12px 0}.habit-ring{height:48px;width:48px;flex-basis:48px;padding:4px}.habit-icon{width:30px;height:30px}.habit-icon svg{width:17px;height:17px}.habit-name{font-size:12px}.habit-meta{font-size:10px;gap:5px}.habit-meter .small-track{width:68px}.habit-actions{gap:3px}.stepper{padding:1px}.stepper button{width:21px;height:25px}.stepper strong{min-width:16px;font-size:10px}.done-button{min-width:31px;padding:7px}.done-button span{display:none}.edit-button{padding:5px 2px}.right-rail{grid-template-columns:1fr}.right-rail .encourage,.right-rail .leader-panel{grid-column:auto}.leader-panel #leader-list{display:block}.calendar-panel,.weekly-panel,.leader-panel{padding:19px}.calendar-grid{gap:6px}.cal-day{min-height:37px}.demo-strip{align-items:flex-start;flex-wrap:wrap}.modal{padding:22px 19px}.modal-actions{gap:6px}}
+
+    /* Expanded, comfortable desktop layout (especially at wide monitor widths).
+       Never constrain the app to a narrow island within an ultrawide browser. */
+    .app{width:100%;max-width:none}
+    .dash{width:100%;max-width:none}
+    @media (min-width:1350px){
+      body{font-size:15px}
+      .sidebar{width:268px;flex-basis:268px;padding:31px 21px 27px}
+      .brand{padding:2px 10px 38px;gap:13px}
+      .brand-mark{width:42px;height:42px;border-radius:14px}
+      .brand-word{font-size:25px}
+      .nav-caption,.sidebar-footer-label{font-size:11px;margin-bottom:14px}
+      .sidebar-nav{gap:7px}
+      .nav-link{font-size:14px;padding:15px 15px;gap:14px}
+      .nav-link svg{width:21px;height:21px}
+      .sidebar-add{font-size:14px;margin-top:29px;padding:15px 11px}
+      .coach-card{padding:23px 21px;margin-bottom:24px}
+      .coach-art{height:85px}
+      .coach-card strong{font-size:15px}
+      .coach-card p{font-size:13px}
+      .profile-text strong{font-size:14px}
+      .profile-text small{font-size:12px}
+      .main{padding:0 clamp(29px,3.1vw,82px) 82px}
+      .topbar{height:103px}
+      .crumbs,.top-date{font-size:14px}
+      .small-icon-btn{width:43px;height:43px}
+      .primary-btn{font-size:14px;padding:14px 19px;border-radius:12px}
+      .hero{padding:43px 0 31px}
+      .eyebrow{font-size:12px}
+      h1{font-size:clamp(37px,2.4vw,49px);margin:14px 0 11px}
+      .hero p{font-size:15px}
+      .date-navigator{padding:9px;gap:9px}
+      .date-navigator button{height:37px;width:37px}
+      .date-navigator .today-button{font-size:14px;padding:0 17px}
+      .demo-strip{font-size:13px;padding:12px 16px;margin-bottom:24px}
+      .stats{grid-template-columns:minmax(0,1.28fr) minmax(0,1fr) minmax(0,1fr);gap:21px;margin-bottom:27px}
+      .stat-card{min-height:198px;padding:27px 30px;border-radius:22px}
+      .stat-label{font-size:15px;gap:10px}
+      .stat-value{font-size:46px;margin-top:19px;margin-bottom:10px}
+      .stat-description,.stat-detail{font-size:13px}
+      .global-ring{width:130px;height:130px;flex-basis:130px;padding:11px}
+      .global-ring-inner strong{font-size:30px}
+      .global-ring-inner span{font-size:11px}
+      .stat-decoration{width:45px;height:45px;border-radius:14px}
+      .progress-track{height:9px;margin-top:20px}
+      .content{grid-template-columns:minmax(0,1fr) clamp(365px,27vw,530px);gap:25px}
+      .habits-panel{padding:31px 31px 15px;border-radius:22px}
+      .heading-title h2{font-size:22px}
+      .rail-title h2{font-size:19px}
+      .heading-count{font-size:12px;padding:5px 9px}
+      .subhead{font-size:14px;margin-top:9px}
+      .quiet-button{font-size:13px;padding:10px 14px}
+      .filter-row{margin-top:27px;margin-bottom:15px}
+      .filter{font-size:13px;padding:10px 15px}
+      .search{height:43px;max-width:200px;min-width:150px;padding:0 13px}
+      .search input{font-size:13px}
+      .habit-item{min-height:108px;gap:19px;padding:16px 5px}
+      .habit-ring{height:74px;width:74px;flex-basis:74px;padding:6px}
+      .habit-icon{height:46px;width:46px}
+      .habit-icon svg{height:25px;width:25px}
+      .habit-name{font-size:16px;letter-spacing:-.25px}
+      .habit-meta{font-size:13px;gap:9px;margin-top:6px}
+      .habit-meter{margin-top:11px;gap:12px;width:min(100%,460px)}
+      .habit-meter .small-track{width:auto;flex:1;min-width:0;height:6px}
+      .habit-meter span{font-size:12px}
+      .habit-actions{gap:9px}
+      .stepper{padding:5px;border-radius:11px}
+      .stepper button{width:33px;height:33px}
+      .stepper strong{font-size:13px;min-width:28px}
+      .done-button{padding:11px 14px;font-size:13px;min-width:86px;border-radius:10px}
+      .edit-button{padding:10px 7px}
+      .list-footer{padding:21px 8px;font-size:13px}
+      .right-rail{gap:23px}
+      .calendar-panel,.weekly-panel,.leader-panel{padding:27px 27px;border-radius:22px}
+      .rail-title{margin-bottom:23px}
+      .cal-month{margin-bottom:19px}
+      .cal-month strong{font-size:16px}
+      .cal-controls button{width:34px;height:34px;border-radius:10px}
+      .calendar-grid{gap:9px 5px}
+      .day-name{font-size:12px;padding:7px 0 10px}
+      .cal-day{font-size:13px;min-height:40px;border-radius:12px}
+      .cal-day .cal-dot{height:4px;width:13px;bottom:4px}
+      .calendar-legend{font-size:12px;margin-top:21px;padding-top:19px}
+      .weekly-subhead{font-size:13px;margin-top:-13px;margin-bottom:20px}
+      .weekly-summary{margin-bottom:22px}
+      .weekly-summary b{font-size:35px}
+      .weekly-summary span{font-size:13px}
+      .week-chart{height:165px;gap:15px}
+      .week-bar-box{height:132px;max-width:37px;border-radius:9px}
+      .week-col label{font-size:12px}
+      .week-foot{margin-top:19px;font-size:12px}
+      .week-foot strong{font-size:13px}
+      .rail-title small{font-size:12px}
+      .leader-item{padding:13px 0;gap:13px}
+      .leader-icon{height:41px;width:41px;border-radius:12px}
+      .leader-item .medal{font-size:13px;width:19px}
+      .leader-info strong{font-size:13px}
+      .leader-info span{font-size:12px}
+      .leader-count{font-size:13px}
+      .encourage{padding:27px 28px;border-radius:21px}
+      .encourage strong{font-size:21px}
+      .encourage p{font-size:13px;max-width:360px}
+      footer.site-foot{font-size:13px;margin-top:34px}
+    }
+    @media (min-width:2100px){
+      .sidebar{width:300px;flex-basis:300px;padding-left:27px;padding-right:27px}
+      .main{padding-left:clamp(60px,3.2vw,100px);padding-right:clamp(60px,3.2vw,100px)}
+      .content{grid-template-columns:minmax(0,1fr) clamp(490px,25vw,610px);gap:31px}
+      .stat-card{min-height:210px}
+      .stat-label{font-size:16px}
+      .habit-item{min-height:119px}
+      .habit-ring{height:82px;width:82px;flex-basis:82px}
+      .habit-icon{height:53px;width:53px}
+      .habit-icon svg{height:27px;width:27px}
+      .habit-name{font-size:18px}
+      .habit-meta{font-size:14px}
+      .habit-meter{width:min(100%,630px)}
+      .habit-actions{gap:13px}
+      .calendar-panel,.weekly-panel,.leader-panel{padding:31px 32px}
+      .cal-day{font-size:14px}
+      .week-chart{height:182px}
+      .week-bar-box{height:148px}
+    }
     @media (prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
   </style>
 </head>
