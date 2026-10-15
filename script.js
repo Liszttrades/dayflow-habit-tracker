@@ -58,6 +58,27 @@
       sparkles:'<path d="M24 2 30 18 46 24 30 30 24 46 18 30 2 24 18 18 24 2Z" fill="#af88fb" stroke="#8a69df" stroke-width="2"/><circle cx="39" cy="9" r="4" fill="#ffe49b"/><circle cx="8" cy="39" r="3" fill="#ffc0cf"/>'
     };
     function livelyIcon(name,size=27){return `<svg class="lively-icon" width="${size}" height="${size}" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${livelyShapes[name]||livelyShapes.sparkles}</svg>`}
+    // Unicode emoji preserve the native iOS look on Apple devices and render in color everywhere else.
+    // Existing saved icon IDs are mapped here, so prior habit data remains compatible.
+    const nativeEmoji={droplet:'💧',book:'📚',dumbbell:'🏋️',leaf:'🪷',pen:'✏️',footsteps:'👟',sun:'☀️',moon:'🌙',brain:'🧠',coffee:'☕',music:'🎵',target:'🎯',heart:'💖',clock:'⏰',sparkles:'✨'};
+    const iconCatalog=[
+      ['droplet','Water','Wellness'],['book','Books','Focus'],['dumbbell','Weights','Fitness'],['leaf','Meditation','Wellness'],['pen','Writing','Focus'],['footsteps','Walking','Fitness'],['sun','Morning','Lifestyle'],['moon','Sleep','Lifestyle'],['brain','Learning','Focus'],['coffee','Coffee','Lifestyle'],['music','Music','Lifestyle'],['target','Goals','Focus'],['heart','Self care','Wellness'],['clock','Time','Focus'],['sparkles','Magic','Lifestyle'],
+      ['emoji:🏃','Running','Fitness'],['emoji:🚴','Cycling','Fitness'],['emoji:🧘','Yoga','Wellness'],['emoji:💪','Strength','Fitness'],['emoji:🏊','Swimming','Fitness'],['emoji:⚽','Sports','Fitness'],['emoji:🥾','Hiking','Fitness'],['emoji:🦋','Mindfulness','Wellness'],['emoji:🥗','Healthy meals','Wellness'],['emoji:🍎','Fruit','Wellness'],['emoji:💊','Vitamins','Wellness'],['emoji:🪥','Brush teeth','Wellness'],['emoji:🧴','Skin care','Wellness'],['emoji:📖','Study','Focus'],['emoji:💻','Coding','Focus'],['emoji:📝','Notes','Focus'],['emoji:🎨','Painting','Focus'],['emoji:📅','Planning','Focus'],['emoji:💼','Work','Focus'],['emoji:💰','Budget','Focus'],['emoji:🪴','Plants','Lifestyle'],['emoji:🐶','Pets','Lifestyle'],['emoji:🧹','Cleaning','Lifestyle'],['emoji:🍳','Cooking','Lifestyle'],['emoji:🌻','Sunshine','Lifestyle'],['emoji:🛌','Rest','Lifestyle'],['emoji:📵','Screen break','Lifestyle'],['emoji:🎮','Gaming','Lifestyle'],['emoji:❤️','Love','Wellness'],['emoji:🌈','Joy','Lifestyle'],['emoji:🕯️','Relax','Wellness'],['emoji:🎸','Instruments','Lifestyle'],['emoji:🌊','Outdoors','Fitness'],['emoji:📷','Photos','Lifestyle']
+    ].map(([id,label,group])=>({id,label,group,emoji:nativeEmoji[id]||id.slice(6)}));
+    const emojiIds=new Set(iconCatalog.map(i=>i.id));
+    function emojiFor(name){return nativeEmoji[name] || (typeof name==='string'&&name.startsWith('emoji:')&&emojiIds.has(name)?name.slice(6):null)}
+    const oldLivelyIcon=livelyIcon;
+    livelyIcon=function(name,size=27){const emoji=emojiFor(name);return emoji?`<span class="habit-emoji" style="--emoji-size:${size}px" aria-hidden="true">${emoji}</span>`:oldLivelyIcon(name,size)};
+    function categoryEmoji(name){return ({Health:'💗',Mind:'🧠',Lifestyle:'🌿'})[name]||'✨'}
+    const DEFAULT_CATEGORIES=['Health','Mind','Lifestyle'];
+    function cleanCategoryName(name){return String(name||'').trim().replace(/\s+/g,' ').slice(0,24)}
+    function mergedCategories(saved=[],habits=[]){
+      const result=[...DEFAULT_CATEGORIES];
+      for(const value of [...(Array.isArray(saved)?saved:[]),...habits.map(h=>h.category)]){
+        const clean=cleanCategoryName(value);if(clean&&!['all','all habits'].includes(clean.toLocaleLowerCase())&&!result.some(n=>n.toLocaleLowerCase()===clean.toLocaleLowerCase())&&result.length<60)result.push(clean);
+      }
+      return result;
+    }
     const MILESTONES=[
       {days:3,name:'Spark',tip:'#ff542c',middle:'#ff8d19',base:'#ffdf4d',core:'#fff1b2',accent:'#ff9d24',soft:'#fff4e6',outline:'#ffe2c4',shadow:'#ff8a4a66',glow:'#ffa63157'},
       {days:10,name:'Blaze',tip:'#e94b15',middle:'#ff7018',base:'#ffbb26',core:'#fff3a6',accent:'#f78120',soft:'#fff1e7',outline:'#ffdbc0',shadow:'#fa682960',glow:'#ff8a285b'},
@@ -79,7 +100,7 @@
     }
     function tierFor(streak){return [...MILESTONES].reverse().find(m=>streak>=m.days)||null}
     const colorChoices=['#8069eb','#f0926d','#38b99d','#58a2eb','#e77caa','#d5a544','#7a8dd9','#a37bde'];
-    const iconChoices=['droplet','book','dumbbell','leaf','pen','footsteps','sun','moon','brain','coffee','music','target','heart','clock','sparkles'];
+    const iconChoices=iconCatalog.map(entry=>entry.id);
     const STORAGE_KEY='dayflow_tracker_v2';
     const defaultHabits=[
       {id:'water',name:'Drink water',category:'Health',icon:'droplet',color:'#58a2eb',goal:8,step:1,unit:'glass'},
@@ -119,16 +140,16 @@
         {water:8,read:15,workout:30,meditate:10,stretch:10,learn:10,walk:6000,journal:1,sleep:7,detox:60}
       ];
       for(let i=0;i<7;i++) logs[dateKey(dateOffset(now,-i))]=samples[i];
-      return {habits:structuredClone(defaultHabits),logs,theme:'light',demo:true,awards:[]};
+      return {habits:structuredClone(defaultHabits),categories:[...DEFAULT_CATEGORIES],logs,theme:'light',demo:true,awards:[]};
     };
     function loadState(){
       try{
         const raw=localStorage.getItem(STORAGE_KEY);
-        if(raw){const loaded=JSON.parse(raw);if(Array.isArray(loaded.habits)&&loaded.logs&&typeof loaded.logs==='object')return {habits:loaded.habits,logs:loaded.logs,theme:loaded.theme==='dark'?'dark':'light',demo:!!loaded.demo,awards:Array.isArray(loaded.awards)?loaded.awards.filter(v=>MILESTONES.some(m=>m.days===v)):[]};}
+        if(raw){const loaded=JSON.parse(raw);if(Array.isArray(loaded.habits)&&loaded.logs&&typeof loaded.logs==='object')return {habits:loaded.habits,categories:mergedCategories(loaded.categories,loaded.habits),logs:loaded.logs,theme:loaded.theme==='dark'?'dark':'light',demo:!!loaded.demo,awards:Array.isArray(loaded.awards)?loaded.awards.filter(v=>MILESTONES.some(m=>m.days===v)):[]};}
       }catch(e){console.warn('Could not load saved tracker data',e)}
       return initialDemo();
     }
-    let state=loadState(),selectedDate=today(),calendarMonth=new Date(today().getFullYear(),today().getMonth(),1),filter='All',search='',editingId=null,chosenIcon='sparkles',chosenColor=colorChoices[0],toastTimeout;
+    let state=loadState(),selectedDate=today(),calendarMonth=new Date(today().getFullYear(),today().getMonth(),1),filter='All',search='',editingId=null,chosenIcon='sparkles',chosenColor=colorChoices[0],chosenCategory='Health',iconGroup='All',emojiSearch='',toastTimeout;
     function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){toast('Browser storage is unavailable. Export a backup to save changes.')}}
     function getAmount(date,id){return Math.max(0,validNumber((state.logs[dateKey(date)]||{})[id]))}
     function completed(date,h){return getAmount(date,h.id)>=h.goal}
@@ -240,6 +261,9 @@
       </article>`;
     }
     function renderHabits(){
+      const available=mergedCategories(state.categories,state.habits);
+      if(filter!=='All'&&!available.includes(filter))filter='All';
+      $('#habit-filters').innerHTML=['All',...available].map(c=>`<button type="button" class="filter ${filter===c?'active':''}" data-filter="${escapeHTML(c)}" aria-pressed="${filter===c}">${c==='All'?'All habits':escapeHTML(c)}</button>`).join('');
       const matches=state.habits.filter(h=>(filter==='All'||h.category===filter)&&h.name.toLowerCase().includes(search.toLowerCase()));
       $('#habits-count').textContent=`${state.habits.length} ${state.habits.length===1?'habit':'habits'}`;
       $('#habit-list').innerHTML=matches.length?matches.map(habitMarkup).join(''):`<div class="empty"><div class="empty-icon">${icon('search',24)}</div><h3>Nothing here yet</h3><p>${state.habits.length?'Try a different filter or search.':'Add your first habit to get started.'}</p></div>`;
@@ -343,20 +367,53 @@
       renderBadges();renderStats();
     }
     function changeDate(date){selectedDate=new Date(date.getFullYear(),date.getMonth(),date.getDate());calendarMonth=new Date(selectedDate.getFullYear(),selectedDate.getMonth(),1);render()}
+    function setCategory(name){
+      chosenCategory=name;
+      $('#habit-category-input').value=name;
+      $('#category-selected-name').textContent=name;
+      $('#category-selected-icon').textContent=categoryEmoji(name);
+      renderCategoryOptions();
+    }
+    function renderCategoryOptions(){
+      $('#category-options').innerHTML=state.categories.map(c=>`<button type="button" role="option" class="category-option ${c===chosenCategory?'selected':''}" data-category="${escapeHTML(c)}" aria-selected="${c===chosenCategory}" tabindex="${c===chosenCategory?0:-1}"><span class="cat-emoji">${categoryEmoji(c)}</span><span class="cat-label">${escapeHTML(c)}</span>${c===chosenCategory?`<span class="category-check">${icon('check',16)}</span>`:''}</button>`).join('');
+    }
+    function setCategoryMenu(open){
+      $('#category-popover').classList.toggle('hidden',!open);
+      $('#habit-category-trigger').classList.toggle('open',open);
+      $('#habit-category-trigger').setAttribute('aria-expanded',String(open));
+      if(!open){$('#category-feedback').textContent='';$('#new-category-input').value='';}
+    }
+    function addCategory(){
+      const input=$('#new-category-input'),raw=input.value.trim(),name=cleanCategoryName(raw);
+      const feedback=$('#category-feedback');
+      if(!name){feedback.textContent='Enter a category name first.';input.focus();return;}
+      if(['all','all habits'].includes(name.toLocaleLowerCase())){feedback.textContent='That name is reserved for filtering.';input.focus();return;}
+      if(raw.length>24){feedback.textContent='Use 24 characters or fewer.';input.focus();return;}
+      const existing=state.categories.find(c=>c.toLocaleLowerCase()===name.toLocaleLowerCase());
+      if(existing){setCategory(existing);setCategoryMenu(false);toast(`Using ${existing}`);return;}
+      if(state.categories.length>=60){feedback.textContent='Category limit reached.';return;}
+      state.categories.push(name);setCategory(name);setCategoryMenu(false);save();toast(`${name} category created!`);
+    }
     function openHabit(id=null){
       editingId=id;const h=id?state.habits.find(h=>h.id===id):null;
       chosenIcon=h?.icon||'sparkles';chosenColor=h?.color||colorChoices[0];
+      chosenCategory=h?.category||'Health';iconGroup='All';emojiSearch='';
       $('#habit-modal-title').textContent=h?'Edit habit':'Create a habit';$('#save-habit-label').textContent=h?'Save changes':'Create habit';
       $('#delete-habit').classList.toggle('hidden',!h);
-      $('#habit-name-input').value=h?.name||'';$('#habit-category-input').value=h?.category||'Health';$('#habit-unit-input').value=h?.unit||'time';
+      $('#habit-name-input').value=h?.name||'';$('#habit-unit-input').value=h?.unit||'time';
       $('#habit-goal-input').value=h?.goal||1;$('#habit-step-input').value=h?.step||1;
+      $('#emoji-search-input').value='';setCategoryMenu(false);setCategory(chosenCategory);
       renderPickers();$('#habit-modal-backdrop').classList.remove('hidden');$('#habit-name-input').focus();
     }
     function renderPickers(){
-      $('#icon-picker').innerHTML=iconChoices.map(i=>`<button type="button" class="icon-choice ${i===chosenIcon?'active':''}" data-icon-choice="${i}" title="${i}" aria-label="${i}" aria-pressed="${i===chosenIcon}">${livelyIcon(i,23)}</button>`).join('');
+      const groups=['All','Wellness','Fitness','Focus','Lifestyle'];
+      $('#emoji-filters').innerHTML=groups.map(g=>`<button type="button" data-emoji-group="${g}" class="emoji-filter ${iconGroup===g?'active':''}" aria-pressed="${iconGroup===g}">${g}</button>`).join('');
+      const visible=iconCatalog.filter(item=>(iconGroup==='All'||item.group===iconGroup)&&(item.label.toLowerCase().includes(emojiSearch)||item.emoji.includes(emojiSearch)||item.group.toLowerCase().includes(emojiSearch)));
+      $('#icon-picker').innerHTML=visible.length?visible.map(item=>`<button type="button" class="icon-choice ${item.id===chosenIcon?'active':''}" data-icon-choice="${escapeHTML(item.id)}" title="${escapeHTML(item.label)}" aria-label="${escapeHTML(item.label)}" aria-pressed="${item.id===chosenIcon}">${livelyIcon(item.id,29)}</button>`).join(''):`<div class="emoji-empty">No matching icons. Try another search ✨</div>`;
+      $('#emoji-count').textContent=`${visible.length} icons`;
       $('#color-picker').innerHTML=colorChoices.map(c=>`<button type="button" class="color-choice ${c===chosenColor?'active':''}" style="--c:${c}" data-color-choice="${c}" title="${c}" aria-label="Color ${c}" aria-pressed="${c===chosenColor}"></button>`).join('');
     }
-    function closeModal(selector){$(selector).classList.add('hidden');editingId=null}
+    function closeModal(selector){$(selector).classList.add('hidden');if(selector==='#habit-modal-backdrop')setCategoryMenu(false);editingId=null}
     function makeId(){return 'h'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
     function startFresh(){if(!confirm('Clear the example progress and start from zero? Your habit list will stay the same.'))return;state.logs={};state.demo=false;state.awards=[];save();render();toast('Fresh start! Your dashboard is all yours.');}
     function showSettings(){closeMobile();$('#settings-dark-toggle').checked=state.theme==='dark';$('#settings-modal-backdrop').classList.remove('hidden')}
@@ -371,7 +428,7 @@
       if(a==='toggle'){setAmount(h.id,value>=h.goal?0:h.goal);if(value<h.goal)toast(`${h.name} completed! Nice work 🎉`)}
       if(a==='edit')openHabit(h.id);
     });
-    document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{filter=b.dataset.filter;renderHabits()}));
+    $('#habit-filters').addEventListener('click',e=>{const b=e.target.closest('[data-filter]');if(b){filter=b.dataset.filter;renderHabits()}});
     $('#habit-search').addEventListener('input',e=>{search=e.target.value;renderHabits()});
     $('#calendar-grid').addEventListener('click',e=>{const b=e.target.closest('[data-date]');if(b)changeDate(dateFromKey(b.dataset.date))});
     $('#prev-month').addEventListener('click',()=>{calendarMonth=new Date(calendarMonth.getFullYear(),calendarMonth.getMonth()-1,1);renderCalendar()});
@@ -382,12 +439,27 @@
     ['#sidebar-add','#header-add','#list-add'].forEach(s=>$(s).addEventListener('click',()=>{closeMobile();openHabit()}));
     $('#habit-modal-close').addEventListener('click',()=>closeModal('#habit-modal-backdrop'));
     $('#cancel-habit').addEventListener('click',()=>closeModal('#habit-modal-backdrop'));
+    $('#habit-category-trigger').addEventListener('click',()=>{const isOpen=$('#habit-category-trigger').getAttribute('aria-expanded')==='true';setCategoryMenu(!isOpen);if(!isOpen)$('#category-options .selected')?.focus({preventScroll:true})});
+    $('#category-options').addEventListener('click',e=>{const b=e.target.closest('[data-category]');if(!b)return;setCategory(b.dataset.category);setCategoryMenu(false);$('#habit-category-trigger').focus()});
+    $('#category-options').addEventListener('keydown',e=>{
+      const options=[...$('#category-options').querySelectorAll('[data-category]')];let index=options.indexOf(document.activeElement);
+      if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){
+        e.preventDefault();index=e.key==='Home'?0:e.key==='End'?options.length-1:(index+(e.key==='ArrowDown'?1:-1)+options.length)%options.length;
+        options.forEach(b=>b.tabIndex=-1);options[index].tabIndex=0;options[index].focus();
+      }
+      if(e.key==='Escape'){e.stopPropagation();setCategoryMenu(false);$('#habit-category-trigger').focus()}
+    });
+    $('#category-add').addEventListener('click',addCategory);
+    $('#new-category-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCategory()}});
+    document.addEventListener('pointerdown',e=>{if(!$('#category-select-wrap').contains(e.target))setCategoryMenu(false)});
     $('#icon-picker').addEventListener('click',e=>{const b=e.target.closest('[data-icon-choice]');if(b){chosenIcon=b.dataset.iconChoice;renderPickers()}});
+    $('#emoji-filters').addEventListener('click',e=>{const b=e.target.closest('[data-emoji-group]');if(b){iconGroup=b.dataset.emojiGroup;renderPickers()}});
+    $('#emoji-search-input').addEventListener('input',e=>{emojiSearch=e.target.value.toLowerCase().trim();renderPickers()});
     $('#color-picker').addEventListener('click',e=>{const b=e.target.closest('[data-color-choice]');if(b){chosenColor=b.dataset.colorChoice;renderPickers()}});
     $('#habit-form').addEventListener('submit',e=>{
       e.preventDefault();const name=$('#habit-name-input').value.trim(),unit=$('#habit-unit-input').value.trim().toLowerCase(),goal=Number($('#habit-goal-input').value),step=Number($('#habit-step-input').value);
       if(!name||!unit||!Number.isInteger(goal)||goal<1||goal>100000||!Number.isInteger(step)||step<1||step>100000){toast('Enter valid habit details and targets.');return}
-      const payload={name,unit,goal,step,category:$('#habit-category-input').value,icon:chosenIcon,color:chosenColor};
+      const payload={name,unit,goal,step,category:chosenCategory,icon:chosenIcon,color:chosenColor};
       if(editingId){const i=state.habits.findIndex(h=>h.id===editingId);if(i>=0)state.habits[i]={...state.habits[i],...payload}}
       else state.habits.push({id:makeId(),...payload});
       const wasEditing=!!editingId;save();closeModal('#habit-modal-backdrop');filter='All';search='';$('#habit-search').value='';render();toast(wasEditing?'Habit updated!':'New habit added!');
@@ -415,7 +487,7 @@
     $('#celebration-backdrop').addEventListener('click',closeCelebration);
     $('#reset-data').addEventListener('click',()=>{
       if(!confirm('Reset all habits and progress? This cannot be undone unless you have a backup.'))return;
-      const theme=state.theme;state={habits:structuredClone(defaultHabits),logs:{},demo:false,theme,awards:[]};
+      const theme=state.theme;state={habits:structuredClone(defaultHabits),categories:[...DEFAULT_CATEGORIES],logs:{},demo:false,theme,awards:[]};
       filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Tracker reset. A fresh chapter begins!');
     });
     $('#export-data').addEventListener('click',()=>{
@@ -429,14 +501,14 @@
         if(file.size>2000000)throw Error('File is too large.');
         const data=JSON.parse(await file.text());
         if(!Array.isArray(data.habits)||!data.logs||typeof data.logs!=='object'||data.habits.length>500)throw Error('Not a valid Dayflow backup.');
-        const cleaned=data.habits.map((h,i)=>({id:String(h.id||'import'+i).slice(0,100),name:String(h.name||'Habit').slice(0,48),category:['Health','Mind','Lifestyle'].includes(h.category)?h.category:'Lifestyle',icon:iconChoices.includes(h.icon)?h.icon:'sparkles',color:colorChoices.includes(h.color)?h.color:colorChoices[0],goal:clamp(Math.round(validNumber(h.goal)),1,100000),step:clamp(Math.round(validNumber(h.step)),1,100000),unit:String(h.unit||'time').slice(0,20)}));
+        const cleaned=data.habits.map((h,i)=>({id:String(h.id||'import'+i).slice(0,100),name:String(h.name||'Habit').slice(0,48),category:cleanCategoryName(h.category)||'Lifestyle',icon:iconChoices.includes(h.icon)?h.icon:'sparkles',color:colorChoices.includes(h.color)?h.color:colorChoices[0],goal:clamp(Math.round(validNumber(h.goal)),1,100000),step:clamp(Math.round(validNumber(h.step)),1,100000),unit:String(h.unit||'time').slice(0,20)}));
         if(!confirm('Import this backup? Your current habits and history will be replaced.'))return;
         const cleanLogs={};for(const [key,log] of Object.entries(data.logs)){if(!/^\d{4}-\d{2}-\d{2}$/.test(key)||!log||typeof log!=='object')continue;cleanLogs[key]={};for(const h of cleaned){const n=Number(log[h.id]);if(Number.isFinite(n))cleanLogs[key][h.id]=clamp(n,0,h.goal)}}
-        state={habits:cleaned,logs:cleanLogs,theme:data.theme==='dark'?'dark':'light',demo:false,awards:Array.isArray(data.awards)?data.awards.filter(v=>MILESTONES.some(t=>t.days===v)):[]};syncAwards(false);setTheme(state.theme);filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Backup imported successfully!');
+        state={habits:cleaned,categories:mergedCategories(data.categories,cleaned),logs:cleanLogs,theme:data.theme==='dark'?'dark':'light',demo:false,awards:Array.isArray(data.awards)?data.awards.filter(v=>MILESTONES.some(t=>t.days===v)):[]};syncAwards(false);setTheme(state.theme);filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Backup imported successfully!');
       }catch(err){toast(err.message||'Could not read backup.')}finally{e.target.value=''}
     });
     document.querySelectorAll('.modal-backdrop').forEach(backdrop=>backdrop.addEventListener('click',e=>{if(e.target===backdrop)backdrop.classList.add('hidden')}));
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCelebration();$('#habit-modal-backdrop').classList.add('hidden');$('#settings-modal-backdrop').classList.add('hidden');closeMobile()}if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&$('#habit-modal-backdrop').classList.contains('hidden')){e.preventDefault();$('#habit-search').focus()}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#habit-category-trigger').getAttribute('aria-expanded')==='true'){setCategoryMenu(false);$('#habit-category-trigger').focus();return;}closeCelebration();$('#habit-modal-backdrop').classList.add('hidden');$('#settings-modal-backdrop').classList.add('hidden');closeMobile()}if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&$('#habit-modal-backdrop').classList.contains('hidden')){e.preventDefault();$('#habit-search').focus()}});
     $('#menu-toggle').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#mobile-scrim').classList.add('show')});
     $('#mobile-scrim').addEventListener('click',closeMobile);
     document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>{

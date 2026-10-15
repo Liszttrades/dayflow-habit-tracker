@@ -335,7 +335,7 @@
     }
     /* Original 2D illustrated flame milestones, badges and animated unlock screen */
     .streak-stat{isolation:isolate}
-    .streak-stat:before{content:"";position:absolute;pointer-events:none;width:190px;height:190px;right:-75px;top:-95px;background:radial-gradient(circle,var(--streak-glow,#ffad6528),transparent 70%);z-index:-1}
+    .streak-stat:before{content:none;display:none}
     .streak-stat-flame{height:65px;width:59px;margin:-10px -8px -18px 0;display:grid;place-items:center}
     .streak-stat-flame .flame-illustration{width:56px;height:65px;filter:drop-shadow(0 4px 8px var(--streak-glow,#ffa24d33))}
     .streak-stat[data-stage]:not([data-stage="0"]) .streak-stat-flame svg{animation:flame-idle 2.7s ease-in-out infinite;transform-origin:50% 85%}
@@ -488,3 +488,81 @@
 @media (max-height:640px){.celebration-card{padding-top:12px;padding-bottom:10px}.celebration-eyebrow{margin:4px 0 7px}.celebration-art{height:200px}.celebration-flame{height:195px}.celebration-flame svg{height:175px}.celebration-rays{height:260px;width:260px}.celebration-halo{width:180px;height:180px}.celebration-next{margin:7px 0 12px!important}.celebration-foot{display:none}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}.effect-layer{display:none!important}}
 
+
+/* Dayflow Personalize Edition — native emoji, custom categories and calm streak panel */
+.streak-stat{background:var(--surface);background-image:none}
+.streak-stat::before,.streak-stat::after{content:none!important;display:none!important}
+.streak-stat-flame .flame-illustration{filter:drop-shadow(0 3px 4px #00000018)}
+/* Number entry: remove desktop spinners, retain type=number validation and mobile numeric keyboard. */
+#habit-form input[type="number"]{-moz-appearance:textfield;appearance:textfield}
+#habit-form input[type="number"]::-webkit-outer-spin-button,#habit-form input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.category-select-wrap{position:relative;min-width:0}
+.category-trigger{width:100%;height:47px;display:flex;align-items:center;gap:10px;padding:5px 12px 5px 9px;border-radius:13px;color:var(--ink);border:1px solid var(--border);background:var(--surface);text-align:left;transition:border-color .22s,box-shadow .22s,background .22s}
+.category-trigger:hover{border-color:#a99bfa;background:var(--surface-alt)}
+.category-trigger.open,.category-trigger:focus-visible{border-color:#a99bfa;box-shadow:0 0 0 3px #997df527;outline:none}
+.selected-cat-icon,.cat-emoji{width:29px;height:29px;border-radius:10px;display:grid;place-items:center;font-size:17px;line-height:1;background:var(--accent-soft);flex-shrink:0}
+.category-selected-name{flex:1;font-size:13px;font-weight:750;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.category-chevron{display:grid;place-items:center;color:var(--ink-muted);transition:transform .24s}
+.category-trigger.open .category-chevron{transform:rotate(180deg)}
+.category-popover{position:absolute;z-index:120;top:calc(100% + 7px);left:0;width:max(100%,266px);background:var(--surface);border:1px solid var(--border);border-radius:17px;padding:11px;box-shadow:0 18px 44px #16133736,0 5px 12px #16133715;animation:pop-menu .19s cubic-bezier(.2,.8,.2,1);max-width:min(330px,86vw)}
+.category-menu-heading{font-size:9px;letter-spacing:1px;font-weight:850;color:var(--ink-light);padding:6px 9px 10px;display:flex;justify-content:space-between;gap:8px}
+.category-menu-heading span{font-weight:650;letter-spacing:0}
+.category-options{display:grid;gap:3px;max-height:180px;overflow:auto;padding:2px;scrollbar-width:thin}
+.category-option{width:100%;display:flex;align-items:center;gap:10px;min-height:42px;padding:6px 8px;border:1px solid transparent;border-radius:11px;background:transparent;color:var(--ink);text-align:left;transition:background .16s,transform .16s}
+.category-option:hover,.category-option:focus-visible{background:var(--surface-alt);outline:none;transform:translateX(2px)}
+.category-option.selected{background:var(--accent-soft);border-color:#9c83fd40;color:var(--accent)}
+.cat-emoji{width:28px;height:28px;font-size:16px;background:var(--surface-alt)}
+.category-option.selected .cat-emoji{background:var(--surface)}
+.cat-label{flex:1;font-size:12px;font-weight:750;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.category-check{display:grid;place-items:center;color:var(--accent)}
+.category-create{border-top:1px solid var(--border);margin-top:9px;padding:11px 4px 2px}
+.category-create label{font-size:11px;font-weight:800;color:var(--ink);margin:0 0 8px}
+.category-create-row{display:flex;align-items:center;gap:7px}
+.category-create-row input{flex:1;min-width:0;width:100%;padding:10px 9px;font-size:12px;border-radius:10px;background:var(--surface-alt)}
+.category-create-row button{display:flex;align-items:center;justify-content:center;gap:3px;min-height:37px;padding:0 10px;border:0;border-radius:10px;color:white;font-size:11px;font-weight:800;background:var(--accent);box-shadow:0 4px 10px #7464e822;white-space:nowrap}
+.category-create-row button:hover{filter:brightness(1.07);transform:translateY(-1px)}
+.category-feedback{font-size:10px;color:#e97679;margin:6px 2px 0;min-height:0}
+.category-feedback:empty{display:none}
+@keyframes pop-menu{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+/* Icon picker is a dedicated playful palette. Unicode emoji render with native Apple illustrations on iOS and with the system's colorful emoji on other platforms. */
+.emoji-field{margin-top:4px}
+.emoji-field-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.emoji-note{font-size:10px;color:var(--ink-light);font-weight:650}
+.emoji-picker-shell{background:var(--surface-alt);border:1px solid var(--border);border-radius:17px;padding:11px}
+.emoji-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:11px;padding:0 10px;color:var(--ink-muted);height:37px;margin-bottom:11px}
+.emoji-search:focus-within{border-color:#a99af8;box-shadow:0 0 0 3px #9c8dff20}
+.emoji-search svg{height:15px;width:15px;flex:none}
+.emoji-search input{padding:0;border:0;outline:none;background:transparent;font-size:12px;min-width:0;box-shadow:none!important}
+.emoji-search input:focus{border:0;outline:none;box-shadow:none!important}
+.emoji-filters{display:flex;gap:6px;overflow:auto;margin-bottom:10px;scrollbar-width:none}
+.emoji-filters::-webkit-scrollbar{display:none}
+.emoji-filter{flex:none;border:1px solid transparent;border-radius:999px;padding:6px 10px;color:var(--ink-muted);background:transparent;font-size:10px;font-weight:800;transition:background .2s,color .2s}
+.emoji-filter.active{background:var(--accent);color:white;box-shadow:0 3px 10px #8873eb35}
+.emoji-filter:not(.active):hover{background:var(--surface);color:var(--ink)}
+.emoji-picker-shell .icon-picker{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px;max-height:175px;overflow:auto;overscroll-behavior:contain;padding:3px 4px 5px;scrollbar-width:thin}
+.emoji-picker-shell .icon-choice{height:auto;min-height:43px;aspect-ratio:1/1;width:100%;border:1px solid var(--border);border-radius:13px;background:var(--surface);box-shadow:0 1px 2px #00000007;transition:transform .2s cubic-bezier(.2,.8,.3,1.5),border-color .2s,background .2s,box-shadow .2s}
+.emoji-picker-shell .icon-choice:hover{transform:translateY(-3px) scale(1.045);border-color:#ae98ff;box-shadow:0 5px 13px #755cdf1b}
+.emoji-picker-shell .icon-choice.active{background:var(--accent-soft);border:2px solid var(--accent);box-shadow:0 0 0 2px #927ff622,0 4px 9px #8468ee1b}
+.emoji-picker-shell .icon-choice.active::after{content:"✓";position:absolute;right:-4px;top:-5px;width:14px;height:14px;border-radius:50%;display:grid;place-items:center;color:white;background:var(--accent);font-size:10px;font-weight:900;border:2px solid var(--surface)}
+.emoji-picker-shell .icon-choice{position:relative}
+.emoji-picker-footer{display:flex;justify-content:space-between;gap:5px;margin-top:8px;font-size:10px;color:var(--ink-light)}
+.emoji-empty{grid-column:1/-1;padding:18px 8px;text-align:center;font-size:12px;color:var(--ink-muted)}
+.habit-emoji{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;font-variant-emoji:emoji;font-size:var(--emoji-size,26px);font-weight:400;line-height:1;display:inline-grid;place-items:center;min-width:1em;filter:drop-shadow(0 2px 1px #11111115);transform:translateZ(0);user-select:none}
+.habit-ring-center .habit-emoji{--emoji-size:27px!important}
+.leader-icon .habit-emoji{--emoji-size:24px!important}
+.habit-icon{display:grid;place-items:center}
+.emoji-picker-shell .icon-choice .habit-emoji{transition:transform .22s ease}
+.emoji-picker-shell .icon-choice:hover .habit-emoji{transform:rotate(-9deg) scale(1.1)}
+/* Add all user categories as horizontally scrollable filters rather than squeezing text. */
+.filters{flex-wrap:nowrap;min-width:0;overflow-x:auto;max-width:100%;scrollbar-width:none;padding-bottom:2px}
+.filters::-webkit-scrollbar{display:none}
+.filters .filter{flex:none;white-space:nowrap}
+@media(max-width:540px){.field-row{gap:10px}.category-popover{max-width:min(320px,84vw)}.emoji-picker-shell .icon-picker{grid-template-columns:repeat(6,minmax(0,1fr));max-height:178px;gap:6px}.emoji-picker-shell .icon-choice{min-height:39px;border-radius:11px}.emoji-note{font-size:9px}.habit-ring-center .habit-emoji{--emoji-size:23px!important}.emoji-picker-shell .icon-choice .habit-emoji{--emoji-size:25px!important}}
+@media(prefers-reduced-motion:reduce){.category-popover,.emoji-picker-shell .icon-choice{animation:none!important;transition:none!important}}
+/* Keep the search magnifier and text on one centered line inside the form. */
+.field .emoji-search{display:flex;align-items:center;gap:8px;margin-bottom:11px;font-weight:400}
+.field .emoji-search input{height:100%;width:100%;border:0;background:transparent;padding:0;margin:0;box-shadow:none;font-weight:500}
+.field .emoji-search input:focus{border:0;box-shadow:none;outline:none}
+@media(max-width:540px){
+  #habit-form .modal-actions{position:sticky;bottom:-22px;background:var(--surface);border-top:1px solid var(--border);padding:12px 0 5px;margin-top:14px;z-index:6}
+}

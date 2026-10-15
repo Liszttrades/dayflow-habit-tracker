@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f7f8fc" />
   <meta name="description" content="Dayflow — your personal habit tracker with daily progress rings, calendar, weekly insights, and streaks." />
   <title>Dayflow — Make every day count</title>
-  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./style.css?v=3">
 </head>
 <body>
   <div class="app">
@@ -83,7 +83,7 @@
               <button class="quiet-button" id="list-add"><span data-icon="plus"></span> Add</button>
             </div>
             <div class="filter-row">
-              <div class="filters" role="group" aria-label="Filter habits by category"><button class="filter active" data-filter="All">All habits</button><button class="filter" data-filter="Health">Health</button><button class="filter" data-filter="Mind">Mind</button><button class="filter" data-filter="Lifestyle">Lifestyle</button></div>
+              <div class="filters" id="habit-filters" role="group" aria-label="Filter habits by category"></div>
               <label class="search"><span data-icon="search"></span><input id="habit-search" placeholder="Search habits" aria-label="Search habits" maxlength="100"></label>
             </div>
             <div class="habit-list" id="habit-list" aria-live="polite"></div>
@@ -126,14 +126,39 @@
       <form id="habit-form">
         <div class="field"><label for="habit-name-input">Habit name</label><input id="habit-name-input" name="habitName" placeholder="e.g. Morning walk" maxlength="48" required></div>
         <div class="field-row">
-          <div class="field"><label for="habit-category-input">Category</label><select id="habit-category-input"><option>Health</option><option>Mind</option><option>Lifestyle</option></select></div>
+          <div class="field category-field">
+            <label id="habit-category-label" for="habit-category-trigger">Category</label>
+            <div class="category-select-wrap" id="category-select-wrap">
+              <button id="habit-category-trigger" class="category-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="category-options" aria-labelledby="habit-category-label category-selected-name">
+                <span class="selected-cat-icon" id="category-selected-icon" aria-hidden="true">💗</span><span class="category-selected-name" id="category-selected-name">Health</span><span class="category-chevron" data-icon="chevron-down"></span>
+              </button>
+              <div class="category-popover hidden" id="category-popover">
+                <div class="category-menu-heading">YOUR CATEGORIES <span>Choose one</span></div>
+                <div id="category-options" class="category-options" role="listbox" aria-label="Categories"></div>
+                <div class="category-create">
+                  <label for="new-category-input">+ Create your own</label>
+                  <div class="category-create-row"><input id="new-category-input" type="text" placeholder="e.g. Creative" maxlength="24" autocomplete="off"/><button type="button" id="category-add" aria-label="Add new category" title="Add category"><span data-icon="plus"></span> Add</button></div>
+                  <p id="category-feedback" class="category-feedback" role="status" aria-live="polite"></p>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="habit-category-input" value="Health"/>
+          </div>
           <div class="field"><label for="habit-unit-input">Unit (singular)</label><input id="habit-unit-input" placeholder="e.g. minute, glass" maxlength="20" required></div>
         </div>
         <div class="field-row">
           <div class="field"><label for="habit-goal-input">Daily target</label><input id="habit-goal-input" type="number" value="1" min="1" max="100000" required></div>
           <div class="field"><label for="habit-step-input">Add per tap</label><input id="habit-step-input" type="number" value="1" min="1" max="100000" required></div>
         </div>
-        <div class="field"><label>Choose an icon</label><div class="icon-picker" id="icon-picker"></div></div>
+        <div class="field emoji-field">
+          <div class="emoji-field-heading"><label id="icon-picker-label">Choose an icon</label><span class="emoji-note">Colorful, expressive emoji</span></div>
+          <div class="emoji-picker-shell">
+            <label class="emoji-search"><span data-icon="search"></span><input id="emoji-search-input" type="search" placeholder="Search icons..." maxlength="40" autocomplete="off" aria-label="Search habit icons"></label>
+            <div class="emoji-filters" id="emoji-filters" role="group" aria-label="Icon categories"></div>
+            <div class="icon-picker" id="icon-picker" role="group" aria-labelledby="icon-picker-label"></div>
+            <div class="emoji-picker-footer"><span>✨ Pick the icon that feels like you</span><span id="emoji-count"></span></div>
+          </div>
+        </div>
         <div class="field"><label>Choose a color</label><div class="color-picker" id="color-picker"></div></div>
         <div class="modal-actions"><button type="button" class="danger-btn hidden" id="delete-habit">Delete habit</button><div class="action-group"><button type="button" class="secondary-btn" id="cancel-habit">Cancel</button><button type="submit" class="primary-btn"><span data-icon="check"></span> <span id="save-habit-label">Create habit</span></button></div></div>
       </form>
@@ -169,6 +194,6 @@
   </div>
   <div id="effect-layer" class="effect-layer" aria-hidden="true"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script.js" defer></script>
+  <script src="./script.js?v=3" defer></script>
 </body>
 </html>
