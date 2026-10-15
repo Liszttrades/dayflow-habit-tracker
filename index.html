@@ -3,24 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#eef0ea" />
-  <meta name="description" content="A habit tracker that runs in your browser. Daily targets, a calendar, weekly stats and streaks. No account, no server." />
-  <title>Dayflow</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%231f4d3d'/%3E%3Cpath d='M9 8v16M14 8v16M19 8v16M24 8v16M5 21 28 11' stroke='%23e6f26b' stroke-width='2.4' stroke-linecap='round' fill='none'/%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
+  <meta name="theme-color" content="#f7f8fc" />
+  <meta name="description" content="Dayflow — your personal habit tracker with daily progress rings, calendar, weekly insights, and streaks." />
+  <title>Dayflow — Make every day count</title>
   <link rel="stylesheet" href="./style.css?v=4">
-  <link rel="stylesheet" href="./refine.css?v=1">
 </head>
 <body>
   <div class="app">
     <div class="mobile-scrim" id="mobile-scrim"></div>
     <aside class="sidebar" id="sidebar" aria-label="Main navigation">
       <a class="brand" href="#overview" aria-label="Dayflow home">
-        <span class="brand-mark"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 5v14M10 5v14M15 5v14M20 5v14M2.5 16 22 8"/></svg></span>
-        <span class="brand-word">dayflow</span>
+        <span class="brand-mark"><svg viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v18M3 12h18M5.7 5.7l12.6 12.6M18.3 5.7 5.7 18.3"/></svg></span>
+        <span class="brand-word">day<span>flow.</span></span>
       </a>
+      <div class="nav-caption">Workspace</div>
       <nav class="sidebar-nav">
         <button class="nav-link active" data-nav="overview"><span data-icon="grid"></span> Overview <span class="nav-dot"></span></button>
         <button class="nav-link" data-nav="habits"><span data-icon="checklist"></span> My habits</button>
@@ -29,15 +25,22 @@
       </nav>
       <button class="sidebar-add" id="sidebar-add"><span data-icon="plus"></span> Create new habit</button>
       <div class="sidebar-spacer"></div>
+      <div class="coach-card">
+        <div class="coach-art"><span class="puff a"></span><span class="puff b"></span><div class="spark" data-icon="sparkles"></div></div>
+        <strong>Little by little ✨</strong>
+        <p>Big changes start with small things you do every day.</p>
+      </div>
+      <div class="sidebar-footer-label">Account</div>
       <div class="sidebar-foot">
-        <button class="text-button" id="settings-open"><span data-icon="settings"></span> Settings</button>
+        <div class="profile"><span class="avatar">Y</span><span class="profile-text"><strong>My workspace</strong><small>Personal tracker</small></span></div>
+        <button class="icon-button" id="settings-open" aria-label="Settings" title="Settings"><span data-icon="settings"></span></button>
       </div>
     </aside>
     <main class="main">
       <header class="topbar">
         <div style="display:flex;align-items:center;gap:12px">
           <button class="small-icon-btn mobile-menu" id="menu-toggle" aria-label="Open menu"><span data-icon="menu"></span></button>
-          <div class="crumbs"><strong>Overview</strong></div>
+          <div class="crumbs"><span>Workspace</span><span class="slash">/</span><strong>Overview</strong></div>
         </div>
         <div class="top-actions">
           <span class="top-date"><span data-icon="calendar"></span> <span id="top-date-label">Today</span></span>
@@ -47,14 +50,14 @@
       </header>
       <div class="dash" id="overview">
         <section class="hero">
-          <div><h1 id="hero-title">Today</h1><p id="hero-subtitle"></p></div>
+          <div><div class="eyebrow"><span class="point"></span> YOUR PERSONAL SPACE</div><h1 id="hero-title">Make today count <span aria-hidden="true">✦</span></h1><p id="hero-subtitle">Keep showing up. Every small step is a win.</p></div>
           <div class="date-navigator" aria-label="Choose day">
             <button id="prev-day" aria-label="Previous day"><span data-icon="chevron-left"></span></button>
             <button class="today-button" id="today-button">Today</button>
             <button id="next-day" aria-label="Next day"><span data-icon="chevron-right"></span></button>
           </div>
         </section>
-        <div class="demo-strip" id="demo-strip"><span><b>Sample data.</b> The numbers below are made up.</span><button id="start-fresh">Clear it and start tracking</button></div>
+        <div class="demo-strip" id="demo-strip"><span data-icon="sparkles"></span><span><b>Preview data:</b> Explore the dashboard with example progress.</span><button id="start-fresh">Start fresh</button></div>
         <section class="stats" aria-label="Your habit statistics">
           <div class="stat-card completion-stat">
             <div class="stat-main"><div class="stat-label"><span data-icon="target"></span> Daily completion</div><div class="stat-value" id="completion-count">0 <span style="font-size:17px;letter-spacing:-.4px;color:var(--ink-light);font-weight:600">/ 10</span></div><p class="stat-description" id="completion-desc">Habits completed today</p></div>
@@ -62,27 +65,37 @@
           </div>
           <div class="stat-card streak-stat" id="streak-stat" data-stage="0">
             <div class="stat-main">
-              <div class="stat-label">Current streak <span class="streak-mini-pill" id="streak-tier-name">No badge yet</span></div>
+              <div class="stat-label">Current streak <span class="streak-mini-pill" id="streak-tier-name">Start your flame</span></div>
               <div class="stat-value"><span id="streak-value">0</span><span class="stat-unit"> days</span></div>
-              <div class="stat-detail"><span id="streak-note">Finish one habit to start</span></div>
-              <div class="streak-next" id="streak-next">First badge at 3 days.</div>
+              <div class="stat-detail"><span data-icon="sparkles"></span><span id="streak-note">One completed habit keeps it alive</span></div>
+              <div class="streak-next" id="streak-next">Unlock your first badge at 3 days.</div>
             </div>
-            <div class="stat-visual streak-visual" aria-hidden="true"><div class="streak-visual-inner"><div class="streak-stat-flame" id="streak-stat-flame"></div></div></div>
+            <div class="stat-visual streak-visual" aria-hidden="true"><div class="streak-visual-inner"><span class="orb-twinkle orb-twinkle-a">✦</span><div class="streak-stat-flame" id="streak-stat-flame"></div><span class="orb-twinkle orb-twinkle-b">✧</span></div></div>
           </div>
           <div class="stat-card weekly-stat-card">
             <div class="stat-main">
               <div class="stat-label">Weekly progress</div>
               <div class="stat-value"><span id="weekly-stat">0</span><span class="stat-unit">%</span></div>
-              <div class="stat-detail"><span id="weekly-note">Weekly average</span></div>
+              <div class="stat-detail"><span data-icon="check-circle"></span><span id="weekly-note">Your weekly average</span></div>
               <div class="progress-track"><div class="progress-fill" id="weekly-progress-track"></div></div>
             </div>
-            <div class="weekly-orb" id="weekly-orb" style="--pct:0" hidden></div>
+            <div class="stat-visual weekly-orb" id="weekly-orb" style="--pct:0" aria-hidden="true"><div class="weekly-orb-inner">
+              <svg class="weekly-orb-art" width="62" height="62" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs><linearGradient id="weekSparkGradient" x1="8" y1="58" x2="59" y2="9"><stop stop-color="#54d5ca"/><stop offset="1" stop-color="#a98cff"/></linearGradient></defs>
+                <rect x="15" y="40" width="10" height="20" rx="5" fill="#a18cf9" opacity=".47"/>
+                <rect x="31" y="30" width="10" height="30" rx="5" fill="#a18cf9" opacity=".7"/>
+                <rect x="47" y="17" width="10" height="43" rx="5" fill="url(#weekSparkGradient)"/>
+                <path d="M13 34 30 23 41 28 57 10" stroke="url(#weekSparkGradient)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M47 10h10v10" stroke="url(#weekSparkGradient)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="13" cy="34" r="3.5" fill="#67daca"/>
+              </svg><span class="weekly-orb-spark">✦</span>
+            </div></div>
           </div>
         </section>
         <div class="content">
           <section class="panel habits-panel" id="habits">
             <div class="section-heading">
-              <div><div class="heading-title"><h2>Your daily habits</h2><span class="heading-count" id="habits-count">10 habits</span></div><p class="subhead" id="habit-day-label"></p></div>
+              <div><div class="heading-title"><h2>Your daily habits</h2><span class="heading-count" id="habits-count">10 habits</span></div><p class="subhead" id="habit-day-label">A little progress every day adds up.</p></div>
               <button class="quiet-button" id="list-add"><span data-icon="plus"></span> Add</button>
             </div>
             <div class="filter-row">
@@ -90,6 +103,7 @@
               <label class="search"><span data-icon="search"></span><input id="habit-search" placeholder="Search habits" aria-label="Search habits" maxlength="100"></label>
             </div>
             <div class="habit-list" id="habit-list" aria-live="polite"></div>
+            <div class="list-footer"><span data-icon="heart"></span> Consistency is more important than perfection.</div>
           </section>
           <div class="right-rail">
             <section class="panel calendar-panel" id="calendar">
@@ -103,27 +117,28 @@
               <p class="weekly-subhead" id="weekly-date-range">Your week at a glance</p>
               <div class="weekly-summary"><b id="weekly-summary-value">0%</b><span>average daily<br>progress</span></div>
               <div class="week-chart" id="week-chart"></div>
-              <div class="week-foot"><span id="week-completed-note">0 of 7 days active</span></div>
+              <div class="week-foot"><span id="week-completed-note">0 of 7 days active</span><strong>Keep it going ↗</strong></div>
             </section>
             <section class="panel badges-panel" id="badges">
-              <div class="rail-title badge-rail-title"><div><h2>Streak badges</h2></div><button type="button" class="badge-preview-btn" id="preview-badges" title="See the 3-day animation">Preview</button></div>
-              <p class="badge-intro">Badges unlock at 3, 10, 30 and more consecutive days.</p>
+              <div class="rail-title badge-rail-title"><div><span class="badge-eyebrow">YOUR COLLECTION</span><h2>Streak badges <span aria-hidden="true">✦</span></h2></div><button type="button" class="badge-preview-btn" id="preview-badges" title="See the 3-day animation">Preview <span aria-hidden="true">↗</span></button></div>
+              <p class="badge-intro">A little spark grows into something amazing. Earn brighter flames as your streak grows.</p>
               <div class="badge-ladder" id="badge-ladder" aria-label="Your streak milestones"></div>
-              <div class="badge-bottom" id="badge-bottom"><span>Finish at least one habit a day to keep a streak.</span></div>
+              <div class="badge-bottom" id="badge-bottom"><span>Complete at least 1 habit each day</span></div>
             </section>
             <section class="panel leader-panel">
               <div class="rail-title"><h2>Top habits this week</h2><small>Completed days</small></div>
               <div id="leader-list"></div>
             </section>
+            <div class="encourage"><span data-icon="sparkles"></span><strong>You're growing every day.</strong><p>You don't have to be perfect. You just have to keep going, one habit at a time.</p></div>
           </div>
         </div>
-        <footer class="site-foot">Everything is stored in this browser. Export a backup from Settings.</footer>
+        <footer class="site-foot">Made for your better days · Your progress is saved on this device.</footer>
       </div>
     </main>
   </div>
   <div class="modal-backdrop hidden" id="habit-modal-backdrop" role="presentation">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="habit-modal-title">
-      <div class="modal-header"><div><h2 id="habit-modal-title">Create a habit</h2><p>Set a daily target and pick an icon.</p></div><button class="icon-button" id="habit-modal-close" aria-label="Close"><span data-icon="x"></span></button></div>
+      <div class="modal-header"><div><h2 id="habit-modal-title">Create a habit</h2><p>Turn a small action into your daily routine.</p></div><button class="icon-button" id="habit-modal-close" aria-label="Close"><span data-icon="x"></span></button></div>
       <form id="habit-form">
         <div class="field"><label for="habit-name-input">Habit name</label><input id="habit-name-input" name="habitName" placeholder="e.g. Morning walk" maxlength="48" required></div>
         <div class="field-row">
@@ -134,7 +149,7 @@
                 <span class="selected-cat-icon" id="category-selected-icon" aria-hidden="true">💗</span><span class="category-selected-name" id="category-selected-name">Health</span><span class="category-chevron" data-icon="chevron-down"></span>
               </button>
               <div class="category-popover hidden" id="category-popover">
-                <div class="category-menu-heading">Categories</div>
+                <div class="category-menu-heading">YOUR CATEGORIES <span>Choose one</span></div>
                 <div id="category-options" class="category-options" role="listbox" aria-label="Categories"></div>
                 <div class="category-create">
                   <label for="new-category-input">+ Create your own</label>
@@ -152,12 +167,12 @@
           <div class="field"><label for="habit-step-input">Add per tap</label><input id="habit-step-input" type="number" value="1" min="1" max="100000" required></div>
         </div>
         <div class="field emoji-field">
-          <div class="emoji-field-heading"><label id="icon-picker-label">Choose an icon</label></div>
+          <div class="emoji-field-heading"><label id="icon-picker-label">Choose an icon</label><span class="emoji-note">Colorful, expressive emoji</span></div>
           <div class="emoji-picker-shell">
-            <label class="emoji-search"><span data-icon="search"></span><input id="emoji-search-input" type="search" placeholder="Search icons" maxlength="40" autocomplete="off" aria-label="Search habit icons"></label>
+            <label class="emoji-search"><span data-icon="search"></span><input id="emoji-search-input" type="search" placeholder="Search icons..." maxlength="40" autocomplete="off" aria-label="Search habit icons"></label>
             <div class="emoji-filters" id="emoji-filters" role="group" aria-label="Icon categories"></div>
             <div class="icon-picker" id="icon-picker" role="group" aria-labelledby="icon-picker-label"></div>
-            <div class="emoji-picker-footer"><span></span><span id="emoji-count"></span></div>
+            <div class="emoji-picker-footer"><span>✨ Pick the icon that feels like you</span><span id="emoji-count"></span></div>
           </div>
         </div>
         <div class="field"><label>Choose a color</label><div class="color-picker" id="color-picker"></div></div>
@@ -167,10 +182,10 @@
   </div>
   <div class="modal-backdrop hidden" id="settings-modal-backdrop" role="presentation">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
-      <div class="modal-header"><div><h2 id="settings-modal-title">Your settings</h2></div><button class="icon-button" id="settings-modal-close" aria-label="Close"><span data-icon="x"></span></button></div>
-      <div class="settings-row"><div><strong>Dark mode</strong><p>Switch to the dark theme.</p></div><input class="toggle" id="settings-dark-toggle" type="checkbox" aria-label="Dark mode" /></div>
-      <div class="settings-row"><div><strong>Local data</strong><p>Stored in this browser only. Export a backup to keep it or move it to another device.</p></div><span data-icon="shield" style="color:#41ad91"></span></div>
-      <div class="settings-row"><div><strong>Start over</strong><p>Delete all progress and restore the 10 sample habits.</p></div><button class="danger-btn" id="reset-data">Reset</button></div>
+      <div class="modal-header"><div><h2 id="settings-modal-title">Your settings</h2><p>Make Dayflow work the way you like.</p></div><button class="icon-button" id="settings-modal-close" aria-label="Close"><span data-icon="x"></span></button></div>
+      <div class="settings-row"><div><strong>Dark mode</strong><p>A softer color palette for evening planning.</p></div><input class="toggle" id="settings-dark-toggle" type="checkbox" aria-label="Dark mode" /></div>
+      <div class="settings-row"><div><strong>Local data</strong><p>Your data stays in this browser. Export a backup to keep it safe or move it to another device.</p></div><span data-icon="shield" style="color:#41ad91"></span></div>
+      <div class="settings-row"><div><strong>Start over</strong><p>Remove all saved progress and restore the 10 example habits.</p></div><button class="danger-btn" id="reset-data">Reset</button></div>
       <div class="settings-buttons"><button class="secondary-btn" id="export-data"><span data-icon="download"></span> Export backup</button><button class="secondary-btn" id="import-button"><span data-icon="upload"></span> Import backup</button><input class="hidden" id="import-input" type="file" accept="application/json,.json"></div>
     </div>
   </div>
@@ -178,22 +193,23 @@
     <div class="celebration-backdrop" id="celebration-backdrop"></div>
     <div class="celebration-card" id="celebration-card">
       <button type="button" id="celebration-close" class="celebration-close" aria-label="Close celebration">&times;</button>
-      <div class="celebration-eyebrow">Milestone</div>
-      <h2 id="celebration-title">3-day streak</h2>
-      <p id="celebration-description">You finished a habit 3 days in a row.</p>
+      <div class="celebration-eyebrow">✦ DAYFLOW MILESTONES ✦</div>
+      <h2 id="celebration-title">Streak unlocked!</h2>
+      <p id="celebration-description">You’ve completed a habit for <strong>3 consecutive days.</strong></p>
       <div class="celebration-art" id="celebration-art">
         <div class="celebration-rays" aria-hidden="true"></div>
         <div class="celebration-particles" id="celebration-particles" aria-hidden="true"></div>
-        <div class="celebration-halo" aria-hidden="true"></div>
+        <div class="celebration-halo" aria-hidden="true"></div><div class="celebration-sparkle sp-one" aria-hidden="true">✦</div><div class="celebration-sparkle sp-two" aria-hidden="true">✧</div><div class="celebration-sparkle sp-three" aria-hidden="true">✦</div><div class="celebration-sparkle sp-four" aria-hidden="true">✦</div>
         <div class="celebration-flame" id="celebration-flame" aria-hidden="true"></div>
       </div>
-      <div class="celebration-earned"><span id="celebration-earned">Spark badge unlocked</span></div>
+      <div class="celebration-earned"><span aria-hidden="true">✦</span><span id="celebration-earned">SPARK BADGE UNLOCKED</span><span aria-hidden="true">✦</span></div>
       <p class="celebration-next" id="celebration-next">Next up: 10 days</p>
-      <button type="button" class="celebration-go" id="celebration-go">Continue</button>
-          </div>
+      <button type="button" class="celebration-go" id="celebration-go">Keep the fire going <span aria-hidden="true">→</span></button>
+      <p class="celebration-foot">Small steps. Big momentum.</p>
+    </div>
   </div>
   <div id="effect-layer" class="effect-layer" aria-hidden="true"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script.js?v=6" defer></script>
+  <script src="./script.js?v=5" defer></script>
 </body>
 </html>
