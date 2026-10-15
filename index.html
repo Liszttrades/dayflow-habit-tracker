@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f7f8fc" />
   <meta name="description" content="Dayflow — your personal habit tracker with daily progress rings, calendar, weekly insights, and streaks." />
   <title>Dayflow — Make every day count</title>
-  <link rel="stylesheet" href="./style.css?v=3">
+  <link rel="stylesheet" href="./style.css?v=4">
 </head>
 <body>
   <div class="app">
@@ -60,20 +60,36 @@
         <div class="demo-strip" id="demo-strip"><span data-icon="sparkles"></span><span><b>Preview data:</b> Explore the dashboard with example progress.</span><button id="start-fresh">Start fresh</button></div>
         <section class="stats" aria-label="Your habit statistics">
           <div class="stat-card completion-stat">
-            <div><div class="stat-label"><span data-icon="target"></span> Daily completion</div><div class="stat-value" id="completion-count">0 <span style="font-size:17px;letter-spacing:-.4px;color:var(--ink-light);font-weight:600">/ 10</span></div><p class="stat-description" id="completion-desc">Habits completed today</p></div>
+            <div class="stat-main"><div class="stat-label"><span data-icon="target"></span> Daily completion</div><div class="stat-value" id="completion-count">0 <span style="font-size:17px;letter-spacing:-.4px;color:var(--ink-light);font-weight:600">/ 10</span></div><p class="stat-description" id="completion-desc">Habits completed today</p></div>
             <div class="global-ring" id="global-ring" style="--pct:0"><div class="global-ring-inner"><strong id="global-percent">0%</strong><span>progress</span></div></div>
           </div>
           <div class="stat-card streak-stat" id="streak-stat" data-stage="0">
-            <div class="stat-topline"><div class="stat-label">Current streak <span class="streak-mini-pill" id="streak-tier-name">Start your flame</span></div><div class="streak-stat-flame" id="streak-stat-flame" aria-hidden="true"></div></div>
-            <div class="stat-value"><span id="streak-value">0</span><span style="font-size:15px;letter-spacing:0;font-weight:700;color:var(--ink-light)"> days</span></div>
-            <div class="stat-detail"><span data-icon="sparkles"></span><span id="streak-note">One completed habit keeps it alive</span></div>
-            <div class="streak-next" id="streak-next">Unlock your first badge at 3 days.</div>
+            <div class="stat-main">
+              <div class="stat-label">Current streak <span class="streak-mini-pill" id="streak-tier-name">Start your flame</span></div>
+              <div class="stat-value"><span id="streak-value">0</span><span class="stat-unit"> days</span></div>
+              <div class="stat-detail"><span data-icon="sparkles"></span><span id="streak-note">One completed habit keeps it alive</span></div>
+              <div class="streak-next" id="streak-next">Unlock your first badge at 3 days.</div>
+            </div>
+            <div class="stat-visual streak-visual" aria-hidden="true"><div class="streak-visual-inner"><span class="orb-twinkle orb-twinkle-a">✦</span><div class="streak-stat-flame" id="streak-stat-flame"></div><span class="orb-twinkle orb-twinkle-b">✧</span></div></div>
           </div>
-          <div class="stat-card">
-            <div class="stat-topline"><div class="stat-label">Weekly progress</div><div class="stat-decoration chart" data-icon="trending-up"></div></div>
-            <div class="stat-value"><span id="weekly-stat">0</span><span style="font-size:15px;letter-spacing:0;font-weight:700;color:var(--ink-light)">%</span></div>
-            <div class="stat-detail"><span data-icon="check-circle"></span><span id="weekly-note">Your weekly average</span></div>
-            <div class="progress-track"><div class="progress-fill" id="weekly-progress-track"></div></div>
+          <div class="stat-card weekly-stat-card">
+            <div class="stat-main">
+              <div class="stat-label">Weekly progress</div>
+              <div class="stat-value"><span id="weekly-stat">0</span><span class="stat-unit">%</span></div>
+              <div class="stat-detail"><span data-icon="check-circle"></span><span id="weekly-note">Your weekly average</span></div>
+              <div class="progress-track"><div class="progress-fill" id="weekly-progress-track"></div></div>
+            </div>
+            <div class="stat-visual weekly-orb" id="weekly-orb" style="--pct:0" aria-hidden="true"><div class="weekly-orb-inner">
+              <svg class="weekly-orb-art" width="62" height="62" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs><linearGradient id="weekSparkGradient" x1="8" y1="58" x2="59" y2="9"><stop stop-color="#54d5ca"/><stop offset="1" stop-color="#a98cff"/></linearGradient></defs>
+                <rect x="15" y="40" width="10" height="20" rx="5" fill="#a18cf9" opacity=".47"/>
+                <rect x="31" y="30" width="10" height="30" rx="5" fill="#a18cf9" opacity=".7"/>
+                <rect x="47" y="17" width="10" height="43" rx="5" fill="url(#weekSparkGradient)"/>
+                <path d="M13 34 30 23 41 28 57 10" stroke="url(#weekSparkGradient)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M47 10h10v10" stroke="url(#weekSparkGradient)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="13" cy="34" r="3.5" fill="#67daca"/>
+              </svg><span class="weekly-orb-spark">✦</span>
+            </div></div>
           </div>
         </section>
         <div class="content">
@@ -194,6 +210,6 @@
   </div>
   <div id="effect-layer" class="effect-layer" aria-hidden="true"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script.js?v=3" defer></script>
+  <script src="./script.js?v=4" defer></script>
 </body>
 </html>

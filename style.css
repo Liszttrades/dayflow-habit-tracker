@@ -566,3 +566,103 @@
 @media(max-width:540px){
   #habit-form .modal-actions{position:sticky;bottom:-22px;background:var(--surface);border-top:1px solid var(--border);padding:12px 0 5px;margin-top:14px;z-index:6}
 }
+
+
+/* Dayflow Refined Edition — corrected panels, full-size dashboard artwork and category management */
+.badges-panel{padding:24px 22px 18px;min-width:0;overflow:hidden}
+.badges-panel .badge-rail-title{align-items:center;gap:12px;margin-bottom:12px;min-width:0}
+.badge-rail-title>div:first-child{min-width:0;flex:1}
+.badges-panel .badge-eyebrow{line-height:1.4;margin:0 0 7px;white-space:normal}
+.badges-panel .badge-rail-title h2{line-height:1.23;margin:0;overflow-wrap:break-word}
+.badges-panel .badge-intro{line-height:1.58;margin:0 0 16px}
+.badges-panel .badge-preview-btn{flex:none}
+.badges-panel .badge-ladder{isolation:isolate}
+.badges-panel .badge-bottom{flex-wrap:wrap;line-height:1.35;margin-top:13px;padding:12px 13px}
+
+/* Consistent, premium dashboard metrics (same visual diameter as daily completion). */
+.stats{align-items:stretch}
+.stats .stat-card{display:flex;align-items:center;justify-content:space-between;gap:clamp(9px,1.1vw,24px);isolation:isolate}
+.stats .stat-main{flex:1 1 0;min-width:0;z-index:1;position:relative}
+.stats .stat-value{margin:17px 0 9px;white-space:nowrap;line-height:1.05}
+.stats .stat-label{flex-wrap:wrap;gap:8px;line-height:1.5}
+.stats .stat-detail{line-height:1.48;align-items:flex-start}
+.stats .stat-detail svg{margin-top:1px}
+.stats .stat-unit{font-size:15px;letter-spacing:0;font-weight:700;color:var(--ink-light)}
+.stats .stat-visual{width:130px;height:130px;flex:0 0 130px;border-radius:50%;padding:10px;display:grid;place-items:center;position:relative;overflow:visible;transform:translateZ(0)}
+.stats .streak-visual{background:conic-gradient(from 220deg,#f7c876,#ff903b 42%,#f8ca73 76%,#ecc795 100%);box-shadow:0 0 0 6px #ff9d3414,0 9px 25px #f89e3217;transition:box-shadow .28s ease}
+.stats .streak-visual-inner{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;position:relative;background:var(--surface);box-shadow:inset 0 0 0 1px #fdba6540}
+.stats .streak-stat-flame{width:83px;height:99px;margin:0;display:grid;place-items:center}
+.stats .streak-stat-flame .flame-illustration{height:94px;width:80px;max-width:none;filter:drop-shadow(0 5px 7px #f59d3640)}
+.stats .orb-twinkle{position:absolute;color:#ffac49;font-weight:800;line-height:1;pointer-events:none}
+.stats .orb-twinkle-a{font-size:14px;top:16px;right:12px}
+.stats .orb-twinkle-b{font-size:11px;bottom:16px;left:11px}
+.stats .streak-stat .streak-next{margin-top:15px;max-width:270px;line-height:1.4}
+.stats .streak-stat .streak-mini-pill{max-width:100%;overflow-wrap:normal}
+.stats .weekly-orb{background:conic-gradient(from 215deg,#61d5c7 0%,#b096fc calc(var(--pct)*1%),var(--ring-track) 0);box-shadow:0 0 0 5px #947ef411,0 8px 20px #7c6ed218;transition:background .35s ease}
+.stats .weekly-orb-inner{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;background:var(--surface);position:relative;box-shadow:inset 0 0 0 1px #a795fc2e}
+.stats .weekly-orb-art{width:68px;height:68px;filter:drop-shadow(0 3px 8px #826ce83c);animation:weekly-orb-float 4.2s ease-in-out infinite}
+.stats .weekly-orb-spark{position:absolute;right:14px;top:9px;font-size:16px;color:#af97ff;animation:weekly-orb-sparkle 3.2s ease-in-out infinite}
+.stats .weekly-stat-card .progress-track{width:min(100%,255px);margin-top:16px;height:9px}
+@keyframes weekly-orb-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes weekly-orb-sparkle{0%,100%{transform:scale(.86) rotate(-10deg);opacity:.5}50%{transform:scale(1.25) rotate(8deg);opacity:1}}
+body.dark .stats .streak-visual-inner,body.dark .stats .weekly-orb-inner{background:#1e202c}
+
+/* A separate delete affordance so category selection remains keyboard-friendly. */
+.category-option-row{display:flex;align-items:center;gap:3px;min-width:0;min-height:42px;border-radius:11px}
+.category-option-row .category-option{flex:1;min-width:0}
+.category-option-row .category-option:hover{transform:none}
+.category-delete{height:32px;width:32px;flex:0 0 32px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--ink-light);display:grid;place-items:center;opacity:.8;transition:background .16s,color .16s,opacity .16s}
+.category-delete svg{width:15px;height:15px}
+.category-delete:hover,.category-delete:focus-visible{color:#dc5b70;background:#fce9ee;border-color:#f5cfda;opacity:1;outline-offset:1px}
+body.dark .category-delete:hover,body.dark .category-delete:focus-visible{color:#ff9dac;background:#57323e;border-color:#8c4b5e}
+.category-option-row .category-option.selected{border-color:#9c83fd40}
+.category-option-row:focus-within{position:relative;z-index:1}
+.category-option-row:hover{background:var(--surface-alt)}
+@media(min-width:1350px){.badges-panel{padding:29px 29px 23px}.badge-rail-title{margin-bottom:12px}.badge-intro{font-size:13px}.badge-step strong{font-size:14px}.badge-step span:last-child{font-size:11px}}
+@media(min-width:2100px){.badges-panel{padding:32px}}
+@media(max-width:1350px){.stats .stat-visual{width:104px;height:104px;flex-basis:104px;padding:8px}.stats .streak-stat-flame{width:68px;height:78px}.stats .streak-stat-flame .flame-illustration{width:65px;height:76px}.stats .weekly-orb-art{width:54px;height:54px}.stats .stat-value{font-size:39px}.stats .streak-stat .streak-next{margin-top:9px}}
+@media(max-width:1050px){.stats .stat-visual{width:92px;height:92px;flex-basis:92px;padding:7px}.stats .streak-stat-flame{width:59px;height:69px}.stats .streak-stat-flame .flame-illustration{width:58px;height:67px}.stats .weekly-orb-art{width:48px;height:48px}}
+@media(max-width:790px){.stats .stat-card{gap:10px}.stats .stat-visual{width:94px;height:94px;flex-basis:94px}.stats .stat-value{font-size:36px}.stats .streak-stat .streak-next{font-size:10px}}
+@media(max-width:540px){
+  .stats .stat-card{position:relative;gap:7px;min-width:0;align-items:flex-start}
+  .stats .stat-label{font-size:11px;gap:5px}
+  .stats .completion-stat{align-items:center}
+  .stats .stat-value{font-size:30px;margin:12px 0 6px}
+  .stats .stat-unit{font-size:11px}
+  .stats .stat-detail{font-size:10px}
+  .stats .streak-stat,.stats .weekly-stat-card{padding:13px 12px 14px;min-height:160px;display:block}
+  .stats .streak-stat .stat-main,.stats .weekly-stat-card .stat-main{position:relative;z-index:2;width:100%}
+  .stats .streak-stat .stat-label,.stats .weekly-stat-card .stat-label{padding-right:54px;min-height:30px;align-items:flex-start}
+  .stats .streak-stat .streak-next{max-width:100%;font-size:9px;line-height:1.5;margin-top:9px}
+  .stats .streak-stat .streak-mini-pill{font-size:8px;padding:3px 5px}
+  .stats .streak-stat .stat-visual,.stats .weekly-stat-card .stat-visual{position:absolute;top:11px;right:11px;width:60px;height:60px;padding:5px;z-index:1}
+  .stats .streak-stat .stat-visual{flex-basis:60px}
+  .stats .streak-stat-flame{width:42px;height:50px}
+  .stats .streak-stat-flame .flame-illustration{width:41px;height:49px}
+  .stats .weekly-stat-card .stat-visual{flex-basis:60px}
+  .stats .weekly-orb-art{width:31px;height:31px}
+  .stats .orb-twinkle{display:none}
+  .stats .weekly-orb-spark{font-size:10px;right:5px;top:3px}
+  .stats .weekly-stat-card .progress-track{height:7px;margin-top:12px}
+  .badges-panel{padding:20px 15px 17px}
+  .badges-panel .badge-rail-title h2{font-size:17px}
+  .badges-panel .badge-ladder{gap:0}
+  .badges-panel .badge-intro{font-size:11px}
+  .badges-panel .badge-bottom{font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.stats .weekly-orb-art,.stats .weekly-orb-spark{animation:none!important}}
+/* On very narrow phones, keep habit controls in their own row instead of pushing outside the viewport. */
+@media(max-width:360px){
+  .habit-list .habit-item{display:grid;grid-template-columns:48px minmax(0,1fr);grid-template-areas:"ring info" "actions actions";column-gap:9px;row-gap:7px;min-width:0;align-items:center}
+  .habit-list .habit-ring{grid-area:ring}
+  .habit-list .habit-info{grid-area:info;min-width:0}
+  .habit-list .habit-actions{grid-area:actions;justify-content:flex-end;width:100%;gap:7px}
+  .habit-list .habit-meter .small-track{width:min(110px,32vw)}
+  .habit-list .done-button{min-width:34px}
+}
+/* Easy-to-spot but still subtle destructive action within the custom-category picker. */
+.category-option-row .category-delete{color:#d96b80;background:#d96b8011;border-color:#d96b8024;opacity:1}
+.category-option-row .category-delete:hover,.category-option-row .category-delete:focus-visible{color:#c4435d;background:#fce9ee;border-color:#f0bbc7}
+body.dark .category-option-row .category-delete{color:#f09bac;background:#f09bac13;border-color:#f09bac26}
+body.dark .category-option-row .category-delete:hover,body.dark .category-option-row .category-delete:focus-visible{color:#ffd4dc;background:#713648;border-color:#a35b6a}
+.stats .streak-visual{background:conic-gradient(from 220deg,var(--streak-accent,#ff903b),color-mix(in srgb,var(--streak-accent,#ff903b) 55%,white) 42%,var(--streak-accent,#ff903b) 76%,color-mix(in srgb,var(--streak-accent,#ff903b) 45%,white) 100%);box-shadow:0 0 0 6px var(--streak-glow,#ff9d3414),0 9px 25px #f89e3217}

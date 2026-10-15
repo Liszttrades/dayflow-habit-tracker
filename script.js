@@ -34,6 +34,7 @@
       music:'<path d="M9 18V5l12-2v13M9 18c0 2-2 3-4 3s-4-1-4-3 2-3 4-3 4 1 4 3ZM21 16c0 2-2 3-4 3s-4-1-4-3 2-3 4-3 4 1 4 3Z"/>',
       clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
       shield:'<path d="M12 2 4 5v7c0 5 3.4 8.1 8 10 4.6-1.9 8-5 8-10V5l-8-3Z"/><path d="m9 12 2 2 4-4"/>',
+      trash:'<path d="M3 6h18M8 6V4h8v2m-11 0 1 15h12l1-15M10 10v7M14 10v7"/>',
       download:'<path d="M12 3v12m-5-5 5 5 5-5M4 17v4h16v-4"/>',
       upload:'<path d="M12 17V5m-5 5 5-5 5 5M4 17v4h16v-4"/>'
     };
@@ -246,7 +247,7 @@
       $('#streak-stat-flame').style.opacity=streak?1:.35;
       $('#streak-tier-name').textContent=tier?`${tier.name} ${tier.days}d`:'No badge yet';
       $('#streak-next').textContent=next?`${Math.max(0,next.days-streak)} more consecutive ${next.days-streak===1?'day':'days'} to your ${next.name} badge`:'The highest flame is yours! Keep going.';
-      $('#weekly-stat').textContent=week.avg;$('#weekly-progress-track').style.width=week.avg+'%';
+      $('#weekly-stat').textContent=week.avg;$('#weekly-orb').style.setProperty('--pct',week.avg);$('#weekly-progress-track').style.width=week.avg+'%';
       $('#weekly-progress-track').parentElement.classList.toggle('week-perfect',week.avg===100);
       $('#weekly-note').textContent=`${week.active} active ${week.active===1?'day':'days'} this week`;
     }
@@ -375,7 +376,24 @@
       renderCategoryOptions();
     }
     function renderCategoryOptions(){
-      $('#category-options').innerHTML=state.categories.map(c=>`<button type="button" role="option" class="category-option ${c===chosenCategory?'selected':''}" data-category="${escapeHTML(c)}" aria-selected="${c===chosenCategory}" tabindex="${c===chosenCategory?0:-1}"><span class="cat-emoji">${categoryEmoji(c)}</span><span class="cat-label">${escapeHTML(c)}</span>${c===chosenCategory?`<span class="category-check">${icon('check',16)}</span>`:''}</button>`).join('');
+      $('#category-options').innerHTML=state.categories.map(c=>{
+        const safe=escapeHTML(c),selected=c===chosenCategory,removable=!DEFAULT_CATEGORIES.includes(c);
+        return `<div class="category-option-row"><button type="button" role="option" class="category-option ${selected?'selected':''}" data-category="${safe}" aria-selected="${selected}" tabindex="${selected?0:-1}"><span class="cat-emoji">${categoryEmoji(c)}</span><span class="cat-label">${safe}</span>${selected?`<span class="category-check">${icon('check',16)}</span>`:''}</button>${removable?`<button type="button" class="category-delete" data-delete-category="${safe}" aria-label="Delete ${safe} category" title="Delete ${safe}">${icon('trash',15)}</button>`:''}</div>`;
+      }).join('');
+    }
+    function removeCategory(name){
+      if(!state.categories.includes(name)||DEFAULT_CATEGORIES.includes(name))return;
+      const assigned=state.habits.filter(h=>h.category===name).length;
+      const question=assigned?`Delete “${name}”? ${assigned} ${assigned===1?'habit uses':'habits use'} this category. ${assigned===1?'It':'They'} will be moved to Lifestyle; no progress will be lost.`:`Delete your “${name}” category?`;
+      if(!window.confirm(question))return;
+      // Reassign first so mergedCategories does not recreate the deleted name.
+      for(const h of state.habits)if(h.category===name)h.category='Lifestyle';
+      state.categories=state.categories.filter(c=>c!==name);
+      if(chosenCategory===name){chosenCategory='Lifestyle';$('#habit-category-input').value='Lifestyle';$('#category-selected-name').textContent='Lifestyle';$('#category-selected-icon').textContent=categoryEmoji('Lifestyle')}
+      if(filter===name)filter='All';
+      save();renderCategoryOptions();renderHabits();
+      $('#category-feedback').textContent='';
+      toast(assigned?`${name} removed · ${assigned} ${assigned===1?'habit moved':'habits moved'} to Lifestyle`:`${name} category removed`);
     }
     function setCategoryMenu(open){
       $('#category-popover').classList.toggle('hidden',!open);
@@ -392,7 +410,7 @@
       const existing=state.categories.find(c=>c.toLocaleLowerCase()===name.toLocaleLowerCase());
       if(existing){setCategory(existing);setCategoryMenu(false);toast(`Using ${existing}`);return;}
       if(state.categories.length>=60){feedback.textContent='Category limit reached.';return;}
-      state.categories.push(name);setCategory(name);setCategoryMenu(false);save();toast(`${name} category created!`);
+      state.categories.push(name);setCategory(name);setCategoryMenu(false);save();renderHabits();toast(`${name} category created!`);
     }
     function openHabit(id=null){
       editingId=id;const h=id?state.habits.find(h=>h.id===id):null;
@@ -440,7 +458,7 @@
     $('#habit-modal-close').addEventListener('click',()=>closeModal('#habit-modal-backdrop'));
     $('#cancel-habit').addEventListener('click',()=>closeModal('#habit-modal-backdrop'));
     $('#habit-category-trigger').addEventListener('click',()=>{const isOpen=$('#habit-category-trigger').getAttribute('aria-expanded')==='true';setCategoryMenu(!isOpen);if(!isOpen)$('#category-options .selected')?.focus({preventScroll:true})});
-    $('#category-options').addEventListener('click',e=>{const b=e.target.closest('[data-category]');if(!b)return;setCategory(b.dataset.category);setCategoryMenu(false);$('#habit-category-trigger').focus()});
+    $('#category-options').addEventListener('click',e=>{const remove=e.target.closest('[data-delete-category]');if(remove){removeCategory(remove.dataset.deleteCategory);return;}const b=e.target.closest('[data-category]');if(!b)return;setCategory(b.dataset.category);setCategoryMenu(false);$('#habit-category-trigger').focus()});
     $('#category-options').addEventListener('keydown',e=>{
       const options=[...$('#category-options').querySelectorAll('[data-category]')];let index=options.indexOf(document.activeElement);
       if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){

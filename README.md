@@ -1,32 +1,20 @@
-# Dayflow — Personalize Edition
+# Dayflow — Refined Dashboard Edition
 
-A static responsive habit tracker. No build tools, account, external fonts, icon packages or frameworks needed.
+Files:
+- `index.html` — page structure
+- `style.css` — visual theme, responsive layout, motion
+- `script.js` — habit tracking, badges, categories, saving
 
-## Files
-- `index.html` — main page and habit form
-- `style.css` — app design, responsive styles, animation, dropdown and emoji styles
-- `script.js` — habit tracking, custom category storage, icon picker, streaks and completion effects
+## Changes
+- Fixed the clipped/overlapping "YOUR COLLECTION / Streak badges" heading by adding proper interior spacing.
+- Aligned the three dashboard statistic cards and gave the streak badge and weekly graphic circular displays matching the daily-completion ring (130 px on wide desktops).
+- Replaced the weekly-progress mini arrow tile with a custom animated SVG bar-and-arrow illustration inside an animated progress dial.
+- Added trash buttons to custom category rows in the Create/Edit Habit popover; core categories (Health, Mind, Lifestyle) stay protected.
+- Deleting a category prompts for confirmation. Habits assigned to it are reassigned to Lifestyle and their progress records are kept; no habits are deleted.
+- Resolved habit-row horizontal overflow on 320px screens.
+- No changes to the `dayflow_tracker_v2` localStorage format. Existing data and previous animations remain compatible.
 
-## Changes in this version
-- Upgraded the category selector to a custom accessible popover with colorful labels and checkmarks.
-- Create your own categories directly inside the habit form, save them in the same browser storage, and filter habits by your categories.
-- Added 49 colorful emoji-style icons in searchable collections, with native rendering (Apple emoji on iOS, the system's emoji elsewhere).
-- Removed the up/down arrows from number fields while preserving numeric input and validation.
-- Removed the awkward orange radial background from the streak card; kept the animated flame and milestone celebrations.
-- Preserved prior progress rings, confetti, animated gradient bars, calendar, and the existing 3/10/30/100/200 day badges.
-- Backups now save and restore user-defined categories and selected icons.
+## Update your GitHub Pages site
+Upload **all three** site files to the root of your existing `dayflow-habit-tracker` repository, replacing the older versions. Keep names unchanged; commit your changes. GitHub Pages will serve the updated site using the current `main` branch deployment. Refresh the page after deployment.
 
-## Upload to GitHub Pages
-1. Unzip the archive.
-2. Upload **index.html, style.css, script.js** together to the root of your existing `dayflow-habit-tracker` repository, replacing the older copies.
-3. Commit changes. Keep GitHub Pages source set to `main` → `/(root)`.
-4. When GitHub finishes deploying, refresh your site. If you see the old version, hard-refresh with Ctrl+Shift+R.
-
-## Saved progress
-Dayflow retains the existing localStorage key `dayflow_tracker_v2`; prior habits, logged progress, and streak badges continue to work.
-
-**Before updating**, open the current website, go to Settings, and export a backup just in case. Progress is stored in the current browser, not synced across devices automatically.
-
-## Notes
-- Icon illustrations use the platform's native emoji font, so exact artwork differs between iOS, Windows and Android. No copied Apple emoji image files are embedded.
-- In the habit form, use **Category** → **+ Create your own** for additional categories. You can search or filter emojis in **Choose an icon**.
+**Back up first:** Dayflow → Settings → Export backup. The site still uses browser-local storage; a public website URL does not sync browser progress across devices.
