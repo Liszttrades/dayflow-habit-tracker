@@ -1,0 +1,11 @@
+{
+  "name":"Dayflow — Habit Tracker",
+  "short_name":"Dayflow",
+  "description":"A quiet place to keep your daily habits and streaks.",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#f7f8fc",
+  "theme_color":"#6d5ce8",
+  "icons":[{"src":"./app-icon.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]
+}

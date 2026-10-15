@@ -227,13 +227,18 @@
       const first=startOfWeek(date),days=Array.from({length:7},(_,i)=>dateOffset(first,i)),included=days.filter(d=>dayDiff(d,today())<=0),n=included.length||1;
       return {days,avg:Math.round(included.reduce((s,d)=>s+dayStats(d).percent,0)/n),active:included.filter(d=>dayStats(d).active).length};
     }
-    function setTheme(value){state.theme=value==='dark'?'dark':'light';document.body.classList.toggle('dark',state.theme==='dark');$('#theme-toggle-icon').innerHTML=icon(state.theme==='dark'?'sun':'moon');$('#settings-dark-toggle').checked=state.theme==='dark';save()}
+    function setTheme(value){state.theme=value==='dark'?'dark':'light';document.body.classList.toggle('dark',state.theme==='dark');$('#theme-toggle-icon').innerHTML=icon(state.theme==='dark'?'sun':'moon');$('#theme-toggle').setAttribute('aria-label',state.theme==='dark'?'Switch to light mode':'Switch to dark mode');$('#theme-toggle').title=state.theme==='dark'?'Switch to light mode':'Switch to dark mode';$('#settings-dark-toggle').checked=state.theme==='dark';document.querySelector('meta[name="theme-color"]')?.setAttribute('content',state.theme==='dark'?'#141620':'#f7f8fc');save()}
     function toast(message){const el=$('#toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2800)}
     function renderHeader(){
       const diff=dayDiff(selectedDate,today()),isToday=diff===0;
       $('#top-date-label').textContent=formatDay(today());
       $('#hero-title').innerHTML=(isToday?'Make today count':diff<0?'Review your progress':'Plan your next win')+' <span aria-hidden="true">✦</span>';
-      $('#hero-subtitle').textContent=isToday?'Keep showing up. Every small step is a win.':`${formatDay(selectedDate)} · Your habits, your pace.`;
+      const daily=dayStats(selectedDate);
+      $('#hero-subtitle').textContent=isToday?
+        (daily.total>0&&daily.done===daily.total?'Your list is complete. Take a second to enjoy it.':
+         daily.done>0?`${daily.done} of ${daily.total} habits done. A little progress looks good on you.`:
+         'A new day, a fresh page. Start with just one thing.'):
+        `${formatDay(selectedDate)} · Your habits, your pace.`;
       $('#today-button').textContent=isToday?'Today':formatShort(selectedDate);
       $('#habit-day-label').textContent=`${isToday?'Today':formatShort(selectedDate)} · Tap + to log progress or ✓ to finish a habit.`;
       $('#demo-strip').classList.toggle('hidden',!state.demo);
@@ -241,7 +246,8 @@
     function renderStats(){
       const s=dayStats(selectedDate),week=weekStats(selectedDate),streak=currentStreak();
       $('#completion-count').innerHTML=`${s.done} <span style="font-size:17px;letter-spacing:-.4px;color:var(--ink-light);font-weight:600">/ ${s.total}</span>`;
-      $('#completion-desc').textContent=`Habits completed ${dayDiff(selectedDate,today())===0?'today':'on this day'}`;
+      $('#completion-desc').textContent=s.total>0&&s.done===s.total?'Everything checked off. Beautiful work.':`Habits completed ${dayDiff(selectedDate,today())===0?'today':'on this day'}`;
+      $('#global-ring').setAttribute('role','progressbar');$('#global-ring').setAttribute('aria-label','Daily habit completion');$('#global-ring').setAttribute('aria-valuemin','0');$('#global-ring').setAttribute('aria-valuemax','100');$('#global-ring').setAttribute('aria-valuenow',String(s.percent));
       $('#global-percent').textContent=s.percent+'%';$('#global-ring').style.setProperty('--pct',s.percent);
       $('.completion-stat').classList.toggle('day-all-complete',s.total>0&&s.done===s.total);
       $('#streak-value').textContent=streak;
@@ -254,7 +260,7 @@
       $('#streak-stat-flame').style.opacity=streak?1:.35;
       $('#streak-tier-name').textContent=tier?`${tier.name} ${tier.days}d`:'No badge yet';
       $('#streak-next').textContent=next?`${Math.max(0,next.days-streak)} more consecutive ${next.days-streak===1?'day':'days'} to your ${next.name} badge`:'The highest flame is yours! Keep going.';
-      $('#weekly-stat').textContent=week.avg;$('#weekly-orb').style.setProperty('--pct',week.avg);$('#weekly-progress-track').style.width=week.avg+'%';
+      $('#weekly-stat').textContent=week.avg;$('#weekly-orb').style.setProperty('--pct',week.avg);$('#weekly-orb').setAttribute('role','img');$('#weekly-orb').setAttribute('aria-label',`${week.avg}% average weekly progress`);$('#weekly-progress-track').style.width=week.avg+'%';
       $('#weekly-progress-track').parentElement.classList.toggle('week-perfect',week.avg===100);
       $('#weekly-note').textContent=`${week.active} active ${week.active===1?'day':'days'} this week`;
     }
@@ -372,7 +378,7 @@
         toast('Perfect day! All your habits are complete ✨');
       }
       syncAwards(true);
-      renderBadges();renderStats();
+      renderBadges();renderStats();renderHeader();
     }
     function changeDate(date){selectedDate=new Date(date.getFullYear(),date.getMonth(),date.getDate());calendarMonth=new Date(selectedDate.getFullYear(),selectedDate.getMonth(),1);render()}
     function setCategory(name){
@@ -478,6 +484,20 @@
     $('#new-category-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCategory()}});
     document.addEventListener('pointerdown',e=>{if(!$('#category-select-wrap').contains(e.target))setCategoryMenu(false)});
     $('#icon-picker').addEventListener('click',e=>{const b=e.target.closest('[data-icon-choice]');if(b){chosenIcon=b.dataset.iconChoice;renderPickers()}});
+    // Small, discoverable keyboard affordances; never intercept typing in forms.
+    document.addEventListener('keydown',e=>{
+      const target=e.target;
+      const typing=target instanceof HTMLElement && (target.matches('input, textarea, select') || target.isContentEditable);
+      const overlayOpen=[...document.querySelectorAll('.modal-backdrop,.streak-celebration')].some(el=>!el.classList.contains('hidden'));
+      if(e.key==='/' && !typing && !overlayOpen && !e.ctrlKey && !e.metaKey && !e.altKey && !e.repeat){
+        e.preventDefault();document.querySelector('#habit-search')?.focus();
+      }
+      if(e.key==='Escape' && target?.id==='habit-search'){target.blur();}
+    });
+    $('#footer-today')?.addEventListener('click',()=>{
+      changeDate(today());
+      document.querySelector('#overview')?.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'start'});
+    });
     $('#emoji-filters').addEventListener('click',e=>{const b=e.target.closest('[data-emoji-group]');if(b){iconGroup=b.dataset.emojiGroup;renderPickers()}});
     $('#emoji-search-input').addEventListener('input',e=>{emojiSearch=e.target.value.toLowerCase().trim();renderPickers()});
     $('#color-picker').addEventListener('click',e=>{const b=e.target.closest('[data-color-choice]');if(b){chosenColor=b.dataset.colorChoice;renderPickers()}});
