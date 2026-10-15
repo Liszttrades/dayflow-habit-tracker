@@ -11,10 +11,14 @@ A responsive, standalone habit-tracking website built with HTML, CSS, and JavaSc
 
 ## Features
 
-- 10 ready-to-use daily habits with custom SVG icons and completion rings
+- 10 ready-to-use daily habits with colorful hand-drawn 2D SVG icons and completion rings
 - Create, edit, and delete habits; customize colors, icons, units, and daily targets
 - Calendar with activity heatmap and editable historical dates
 - Weekly completion chart, streaks, and top habit rankings
+- Animated flame streak badges at **3, 10, 30, 100, and 200 days** (orange → gold → red → pink → purple)
+- Animated celebration modal with fire, light rays, bounce and confetti when you first earn a new milestone
+- **Streak badges** panel with permanent earned badges, a milestone countdown, and a Preview button to test the effect
+- Preview every badge color by clicking its icon; unlocked badges replay their celebration; respects reduced-motion preferences
 - Search and category filters, light/dark theme, mobile-friendly layout
 - Automatic browser storage, JSON backup download, and backup restore
 - Full-width, comfortable desktop layout with enlarged cards, calendars, habit rings, and progress bars
@@ -30,7 +34,7 @@ Your habits and check-ins are saved using **localStorage** in the current browse
 
 ### How streaks work
 
-A day counts toward your streak after you **fully complete at least one habit**. If today is not yet active, yesterday's streak is preserved. Daily percentage is the average of progress toward each habit's goal, capped at 100% per habit.
+A day counts toward your streak after you **fully complete at least one habit**. If today is not yet active, yesterday's streak is preserved. When you cross a milestone, the animation displays **once when newly unlocked**, and the badge remains earned even if your streak later ends. Badge unlocks are stored under the existing `dayflow_tracker_v2` browser storage key and included in JSON backup exports. Previously saved habits and logs continue to work. In example-data mode, streak badges are clearly marked **Demo** and don't count as real achievements. Click **Start fresh** to begin tracking your own badges. You can click **Preview**, or any locked badge, to see its color and animation immediately without unlocking it. Daily percentage is the average of progress toward each habit's goal, capped at 100% per habit.
 
 ## Files
 
