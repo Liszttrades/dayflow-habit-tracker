@@ -1,0 +1,150 @@
+/* Dayflow design pass: loaded after style.css, overrides only.
+   Direction: a paper logbook. Pine ink, one highlighter colour, flat surfaces, small radii. */
+
+:root{
+  color-scheme:light;
+  --bg:#eef0ea; --surface:#f8f9f5; --surface-alt:#e9ece4; --nav-bg:#f8f9f5;
+  --ink:#18211c; --ink-muted:#4f5a52; --ink-light:#7a857d;
+  --border:#cbd1c5; --track:#dde2d6; --ring-track:#dde2d6;
+  --accent:#1f4d3d; --accent-deep:#163a2e; --accent-soft:#dde7d6;
+  --mark:#e6f26b; --mark-soft:#f1f6b8;
+  --shadow:none;
+  --r-card:8px; --r-ctl:6px;
+}
+body.dark{
+  color-scheme:dark;
+  --bg:#121815; --surface:#1a221e; --surface-alt:#222b26; --nav-bg:#161d19;
+  --ink:#e9eee6; --ink-muted:#aab5ab; --ink-light:#7f8b81;
+  --border:#2f3a33; --track:#2c372f; --ring-track:#2c372f;
+  --accent:#b7d86a; --accent-deep:#9cc04f; --accent-soft:#26331f;
+  --mark:#c9d84a; --mark-soft:#3a4219; --shadow:none;
+}
+
+body{font-family:"Schibsted Grotesk","Helvetica Neue",Arial,sans-serif;font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+body.dark button:focus-visible,body.dark input:focus-visible{outline-color:var(--accent)}
+
+/* shape: one small radius, no shadows, no washes */
+.panel,.stat-card,.date-navigator,.demo-strip,.habits-panel{border-radius:var(--r-card);box-shadow:none}
+.modal{border-radius:10px;box-shadow:0 12px 40px #0003}
+.primary-btn,.sidebar-add,.small-icon-btn,.nav-link,.quiet-button,.secondary-btn,.danger-btn,.field input,.search,.category-trigger,.icon-button,.date-navigator button{border-radius:var(--r-ctl)}
+.primary-btn,.sidebar-add{background:var(--accent);color:var(--bg);box-shadow:none;font-weight:600}
+body:not(.dark) .primary-btn,body:not(.dark) .sidebar-add{color:#f4f7ee}
+body.dark .primary-btn,body.dark .sidebar-add{color:#10170c}
+.sidebar-add:hover,.primary-btn:hover{background:var(--accent-deep)}
+button:active:not(:disabled){transform:none}
+
+/* brand */
+.brand-mark{background:var(--accent);border-radius:6px;box-shadow:none;transform:none;color:var(--mark);width:34px;height:34px}
+.brand-mark svg{transform:none}
+.brand-word{font-size:21px;font-weight:700;letter-spacing:-.04em}
+.brand-word span{color:inherit}
+
+/* nav */
+.nav-link{font-weight:500;padding:11px 13px}
+.nav-link.active{background:var(--accent-soft);color:var(--ink);font-weight:600}
+.nav-link .nav-dot{display:none}
+.text-button{border:0;background:transparent;color:var(--ink-muted);display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:var(--r-ctl);font-weight:500;width:100%}
+.text-button:hover{background:var(--surface-alt);color:var(--ink)}
+.sidebar-foot{padding:0}
+.sidebar-spacer{flex:1}
+.crumbs strong{font-weight:600}
+
+/* hero: left aligned, big date-like heading */
+.hero{padding:40px 0 26px;align-items:flex-end}
+h1{font-size:44px;font-weight:600;letter-spacing:-.035em;line-height:1.05;margin:0 0 8px}
+.hero p{font-size:15px;color:var(--ink-muted)}
+.date-navigator{background:transparent;padding:0;gap:4px;border:0}
+.date-navigator button{border:1px solid var(--border);background:var(--surface)}
+.date-navigator .today-button{font-weight:600;padding:0 14px;height:31px}
+
+.demo-strip{background:transparent;border:1px dashed var(--border);color:var(--ink-muted);font-size:12px}
+.demo-strip b{color:var(--ink);font-weight:600}
+.demo-strip button{color:var(--ink);font-weight:600}
+
+/* stats */
+.stats{gap:12px}
+.stat-card{background:var(--surface);min-height:150px;padding:20px 22px}
+.stat-label{font-size:13px;font-weight:500;color:var(--ink-muted)}
+.stat-label svg{color:var(--ink-light)}
+.stat-value{font-size:44px;font-weight:600;letter-spacing:-.045em;margin:14px 0 6px}
+.stat-unit{font-size:15px;font-weight:500;color:var(--ink-muted);letter-spacing:0}
+.stat-description,.stat-detail{font-size:12px;color:var(--ink-muted);font-weight:400}
+.global-ring{background:conic-gradient(var(--accent) calc(var(--pct)*1%),var(--ring-track) 0)}
+.global-ring-inner{background:var(--surface)}
+.global-ring-inner strong{font-weight:600;font-size:23px}
+.progress-track{border-radius:2px;background:var(--track)}
+.progress-fill,.progress-track.week-perfect .progress-fill{background:var(--accent);border-radius:2px}
+.streak-mini-pill{background:transparent;border:1px solid var(--border);color:var(--ink-muted);border-radius:4px;font-weight:500;text-transform:none;letter-spacing:0}
+.weekly-orb{display:none!important}
+.stats .streak-visual{background:none!important}
+.streak-next{color:var(--ink-muted)}
+
+/* habit list */
+.heading-title h2,.rail-title h2,.section-heading h2{font-weight:600;letter-spacing:-.02em}
+.heading-count{background:transparent;color:var(--ink-light);padding:0;font-weight:400}
+.filters{background:transparent;padding:0;gap:4px}
+.filter{border:1px solid transparent;font-weight:500;font-size:12px;border-radius:var(--r-ctl)}
+.filter.active{background:var(--ink);color:var(--bg);box-shadow:none}
+.habit-item{border-bottom-color:var(--border);animation:none}
+.habit-name{font-weight:600}
+.small-fill,.habit-item.is-complete .small-fill{background:var(--accent);border-radius:1px}
+.done-button{border-radius:var(--r-ctl);font-weight:600}
+.done-button.completed{background:var(--mark);color:#18211c}
+body.dark .done-button.completed{background:var(--mark);color:#10170c}
+.stepper{border-radius:var(--r-ctl)}
+
+/* calendar: days read like highlighter on a paper calendar */
+.cal-day{border-radius:3px;font-weight:500}
+.cal-day.heavy{background:var(--mark);color:#18211c}
+.cal-day.heavy .cal-dot{background:#18211c}
+.cal-day.mid{background:var(--mark-soft);color:var(--ink)}
+body.dark .cal-day.heavy{background:var(--mark);color:#10170c}
+body.dark .cal-day.mid{background:var(--mark-soft);color:var(--ink)}
+.cal-day.today{border-color:var(--ink);border-width:1.5px}
+.cal-day.selected{background:var(--ink)!important;color:var(--bg)!important;box-shadow:none;border-color:var(--ink)}
+.legend-square{border-radius:2px}
+
+/* week chart */
+.week-bar,.week-col.today .week-bar,.week-col.all-done .week-bar{background:var(--accent);border-radius:2px}
+.week-col.future .week-bar{background:var(--track)}
+.weekly-summary b{font-weight:600}
+
+/* badges and leaderboard */
+.badge-step{border-radius:var(--r-ctl)}
+.badge-step.unlocked{background:var(--surface-alt)}
+.badge-preview-btn{border-radius:var(--r-ctl);font-weight:500}
+.leader-icon{border-radius:var(--r-ctl)}
+.leader-count{color:var(--ink);font-weight:600}
+
+/* forms */
+.field label,.category-menu-heading{text-transform:none;letter-spacing:0;font-size:12px;font-weight:600;color:var(--ink-muted)}
+.category-popover,.emoji-picker-shell,.icon-choice{border-radius:var(--r-ctl)}
+.toggle{accent-color:var(--accent)}
+
+/* toast */
+.toast{background:var(--ink);color:var(--bg);border-radius:var(--r-ctl);box-shadow:none;font-weight:500}
+
+/* celebration: kept, but quiet. No rays, halo, confetti or sparkle glyphs */
+.celebration-rays,.celebration-halo,.celebration-particles,.celebration-sparkle,.effect-layer{display:none!important}
+.celebration-card{background:#17211c;border:1px solid #2f3a33;border-radius:10px;box-shadow:0 12px 40px #0006}
+.celebration-card::before{display:none}
+.celebration-eyebrow{text-transform:none;letter-spacing:0;font-size:13px;font-weight:500}
+.celebration-card h2{font-weight:600;letter-spacing:-.03em}
+.celebration-card h2 .accent-text{color:inherit;background:none;-webkit-text-fill-color:currentColor}
+.celebration-go{background:var(--mark);color:#18211c;border-radius:var(--r-ctl);box-shadow:none;font-weight:600}
+.celebration-earned{text-transform:none;letter-spacing:0}
+
+@media (max-width:540px){
+  h1{font-size:34px}
+  .stat-value{font-size:36px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+
+/* dark-mode corrections */
+body.dark .brand-mark{color:#10170c}
+body.dark .demo-strip{background:transparent;border-color:var(--border);color:var(--ink-muted)}
+body.dark .demo-strip button{color:var(--ink)}
+@media (max-width:540px){.hero>div:first-child{width:100%;text-align:left}.hero h1,.hero p{text-align:left}}

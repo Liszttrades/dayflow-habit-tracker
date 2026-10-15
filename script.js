@@ -199,7 +199,7 @@
           <span class="badge-art">${flameArt(t,62)}${isEarned&&!isDemo?'<span class="badge-tick">✓</span>':''}</span><strong>${t.days}d</strong><span>${isEarned?(isDemo?'Demo':'Earned'):t.name}</span></button>`;
       }).join('');
       const next=MILESTONES.find(t=>streak<t.days);
-      $('#badge-bottom').innerHTML=`<span>${state.demo?'Sample badges · start fresh to track yours':best?'✨ Best streak: '+best+' days':'Complete 1 habit daily to begin'}</span>${next?`<b>${next.days-streak} days to ${next.name}</b>`:'<b>Legendary streak ✦</b>'}`;
+      $('#badge-bottom').innerHTML=`<span>${state.demo?'Sample badges':best?'Best streak: '+best+' days':'No streak yet'}</span>${next?`<b>${next.days-streak} days to ${next.name}</b>`:'<b>Top badge earned</b>'}`;
     }
     let celebrationReturnFocus=null;
     function showCelebration(m,preview=false){
@@ -208,13 +208,13 @@
       const root=$('#streak-celebration'),panel=$('#celebration-card'),next=MILESTONES.find(tier=>tier.days>t.days);
       panel.style.setProperty('--celebrate-glow',t.glow);panel.style.setProperty('--celebrate-accent',t.accent);
       panel.style.setProperty('--celebrate-soft',t.days>=100?'#372048':'#422a36');panel.style.setProperty('--celebrate-ray',t.accent+'33');
-      $('#celebration-title').innerHTML=preview?`${t.days}-day <span class="accent-text">flame preview</span>`:`Streak <span class="accent-text">${t.days===3?'unlocked!':'upgraded!'}</span>`;
-      panel.querySelector('.celebration-eyebrow').textContent=preview?'✦ BADGE PREVIEW ✦':`✦ ${t.days}-DAY MILESTONE ✦`;
-      $('#celebration-description').innerHTML=preview?`See the ${t.name} flame you can earn after <strong>${t.days} consecutive days.</strong>`:`You've completed a habit for <strong>${t.days} consecutive days.</strong> That's amazing!`;
+      $('#celebration-title').innerHTML=preview?`${t.days}-day badge`:`${t.days}-day streak`;
+      panel.querySelector('.celebration-eyebrow').textContent=preview?'Badge preview':`${t.days}-day milestone`;
+      $('#celebration-description').innerHTML=preview?`This is the ${t.name} badge. You earn it after ${t.days} days in a row.`:`You finished a habit ${t.days} days in a row.`;
       $('#celebration-flame').innerHTML=flameArt(t,210);
-      $('#celebration-earned').textContent=preview?`${t.name.toUpperCase()} · PREVIEW`:`${t.name.toUpperCase()} BADGE UNLOCKED`;
-      $('#celebration-next').textContent=preview?`Unlock at ${t.days} consecutive days ✦`:next?`Next color unlocks at ${next.days} days ✦`:'Every day adds to your legendary streak ✦';
-      $('#celebration-go').innerHTML=preview?'Back to Dayflow <span aria-hidden="true">→</span>':'Keep it up <span aria-hidden="true">→</span>';
+      $('#celebration-earned').textContent=preview?`${t.name} badge, preview`:`${t.name} badge unlocked`;
+      $('#celebration-next').textContent=preview?`Unlocks at ${t.days} days in a row.`:next?`Next badge at ${next.days} days.`:'This is the highest badge.';
+      $('#celebration-go').innerHTML=preview?'Close':'Continue';
       const palette=[t.accent,t.base,t.tip,'#fff4bf','#ceb4ff','#fff'];
       $('#celebration-particles').innerHTML=Array.from({length:34},(_,i)=>{
         const angle=i*2.39996,radius=95+(i%6)*24,dx=Math.cos(angle)*radius,dy=Math.sin(angle)*radius;
@@ -232,10 +232,10 @@
     function renderHeader(){
       const diff=dayDiff(selectedDate,today()),isToday=diff===0;
       $('#top-date-label').textContent=formatDay(today());
-      $('#hero-title').innerHTML=(isToday?'Make today count':diff<0?'Review your progress':'Plan your next win')+' <span aria-hidden="true">✦</span>';
-      $('#hero-subtitle').textContent=isToday?'Keep showing up. Every small step is a win.':`${formatDay(selectedDate)} · Your habits, your pace.`;
+      $('#hero-title').textContent=isToday?'Today':diff<0?'Looking back':'Coming up';
+      $('#hero-subtitle').textContent=formatDay(selectedDate);
       $('#today-button').textContent=isToday?'Today':formatShort(selectedDate);
-      $('#habit-day-label').textContent=`${isToday?'Today':formatShort(selectedDate)} · Tap + to log progress or ✓ to finish a habit.`;
+      $('#habit-day-label').textContent=`${isToday?'Today':formatShort(selectedDate)}. Tap + to log progress, ✓ to finish a habit.`;
       $('#demo-strip').classList.toggle('hidden',!state.demo);
     }
     function renderStats(){
@@ -253,7 +253,7 @@
       $('#streak-stat-flame').innerHTML=flameArt(tier||MILESTONES[0],67);
       $('#streak-stat-flame').style.opacity=streak?1:.35;
       $('#streak-tier-name').textContent=tier?`${tier.name} ${tier.days}d`:'No badge yet';
-      $('#streak-next').textContent=next?`${Math.max(0,next.days-streak)} more consecutive ${next.days-streak===1?'day':'days'} to your ${next.name} badge`:'The highest flame is yours! Keep going.';
+      $('#streak-next').textContent=next?`${Math.max(0,next.days-streak)} more consecutive ${next.days-streak===1?'day':'days'} to your ${next.name} badge`:'You have the top badge.';
       $('#weekly-stat').textContent=week.avg;$('#weekly-orb').style.setProperty('--pct',week.avg);$('#weekly-progress-track').style.width=week.avg+'%';
       $('#weekly-progress-track').parentElement.classList.toggle('week-perfect',week.avg===100);
       $('#weekly-note').textContent=`${week.active} active ${week.active===1?'day':'days'} this week`;
@@ -369,7 +369,7 @@
         burstAt($('#global-ring'),h.color,35);
         animatePerfectWeek(selectedDate);
         setTimeout(()=>$('.completion-stat')?.classList.remove('day-all-just-finished'),1300);
-        toast('Perfect day! All your habits are complete ✨');
+        toast('All habits done for today.');
       }
       syncAwards(true);
       renderBadges();renderStats();
@@ -417,7 +417,7 @@
       const existing=state.categories.find(c=>c.toLocaleLowerCase()===name.toLocaleLowerCase());
       if(existing){setCategory(existing);setCategoryMenu(false);toast(`Using ${existing}`);return;}
       if(state.categories.length>=60){feedback.textContent='Category limit reached.';return;}
-      state.categories.push(name);setCategory(name);setCategoryMenu(false);save();renderHabits();toast(`${name} category created!`);
+      state.categories.push(name);setCategory(name);setCategoryMenu(false);save();renderHabits();toast(`Added category ${name}`);
     }
     function openHabit(id=null){
       editingId=id;const h=id?state.habits.find(h=>h.id===id):null;
@@ -434,13 +434,13 @@
       const groups=['All','Wellness','Fitness','Focus','Lifestyle'];
       $('#emoji-filters').innerHTML=groups.map(g=>`<button type="button" data-emoji-group="${g}" class="emoji-filter ${iconGroup===g?'active':''}" aria-pressed="${iconGroup===g}">${g}</button>`).join('');
       const visible=iconCatalog.filter(item=>(iconGroup==='All'||item.group===iconGroup)&&(item.label.toLowerCase().includes(emojiSearch)||item.emoji.includes(emojiSearch)||item.group.toLowerCase().includes(emojiSearch)));
-      $('#icon-picker').innerHTML=visible.length?visible.map(item=>`<button type="button" class="icon-choice ${item.id===chosenIcon?'active':''}" data-icon-choice="${escapeHTML(item.id)}" title="${escapeHTML(item.label)}" aria-label="${escapeHTML(item.label)}" aria-pressed="${item.id===chosenIcon}">${livelyIcon(item.id,29)}</button>`).join(''):`<div class="emoji-empty">No matching icons. Try another search ✨</div>`;
+      $('#icon-picker').innerHTML=visible.length?visible.map(item=>`<button type="button" class="icon-choice ${item.id===chosenIcon?'active':''}" data-icon-choice="${escapeHTML(item.id)}" title="${escapeHTML(item.label)}" aria-label="${escapeHTML(item.label)}" aria-pressed="${item.id===chosenIcon}">${livelyIcon(item.id,29)}</button>`).join(''):`<div class="emoji-empty">No icons match that search.</div>`;
       $('#emoji-count').textContent=`${visible.length} icons`;
       $('#color-picker').innerHTML=colorChoices.map(c=>`<button type="button" class="color-choice ${c===chosenColor?'active':''}" style="--c:${c}" data-color-choice="${c}" title="${c}" aria-label="Color ${c}" aria-pressed="${c===chosenColor}"></button>`).join('');
     }
     function closeModal(selector){$(selector).classList.add('hidden');if(selector==='#habit-modal-backdrop')setCategoryMenu(false);editingId=null}
     function makeId(){return 'h'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
-    function startFresh(){if(!confirm('Clear the example progress and start from zero? Your habit list will stay the same.'))return;state.logs={};state.demo=false;state.awards=[];save();render();toast('Fresh start! Your dashboard is all yours.');}
+    function startFresh(){if(!confirm('Clear the example progress and start from zero? Your habit list will stay the same.'))return;state.logs={};state.demo=false;state.awards=[];save();render();toast('Sample data cleared');}
     function showSettings(){closeMobile();$('#settings-dark-toggle').checked=state.theme==='dark';$('#settings-modal-backdrop').classList.remove('hidden')}
     function closeMobile(){$('#sidebar').classList.remove('open');$('#mobile-scrim').classList.remove('show')}
     $('#habit-list').addEventListener('click',e=>{
@@ -450,7 +450,7 @@
       const a=btn.dataset.habitAction,value=getAmount(selectedDate,h.id);
       if(a==='increase')setAmount(h.id,value+h.step);
       if(a==='decrease')setAmount(h.id,value-h.step);
-      if(a==='toggle'){setAmount(h.id,value>=h.goal?0:h.goal);if(value<h.goal)toast(`${h.name} completed! Nice work 🎉`)}
+      if(a==='toggle'){setAmount(h.id,value>=h.goal?0:h.goal);if(value<h.goal)toast(`${h.name} done`)}
       if(a==='edit')openHabit(h.id);
     });
     $('#habit-filters').addEventListener('click',e=>{const b=e.target.closest('[data-filter]');if(b){filter=b.dataset.filter;renderHabits()}});
@@ -487,14 +487,14 @@
       const payload={name,unit,goal,step,category:chosenCategory,icon:chosenIcon,color:chosenColor};
       if(editingId){const i=state.habits.findIndex(h=>h.id===editingId);if(i>=0)state.habits[i]={...state.habits[i],...payload}}
       else state.habits.push({id:makeId(),...payload});
-      const wasEditing=!!editingId;save();closeModal('#habit-modal-backdrop');filter='All';search='';$('#habit-search').value='';render();toast(wasEditing?'Habit updated!':'New habit added!');
+      const wasEditing=!!editingId;save();closeModal('#habit-modal-backdrop');filter='All';search='';$('#habit-search').value='';render();toast(wasEditing?'Habit saved':'Habit added');
     });
     $('#delete-habit').addEventListener('click',()=>{
       if(!editingId)return;const target=state.habits.find(h=>h.id===editingId);
       if(!confirm(`Delete "${target?.name||'this habit'}" and its saved progress?`))return;
       state.habits=state.habits.filter(h=>h.id!==editingId);
       for(const log of Object.values(state.logs))delete log[editingId];
-      save();closeModal('#habit-modal-backdrop');render();toast('Habit deleted.');
+      save();closeModal('#habit-modal-backdrop');render();toast('Habit deleted');
     });
     $('#settings-open').addEventListener('click',showSettings);
     $('#settings-modal-close').addEventListener('click',()=>closeModal('#settings-modal-backdrop'));
@@ -513,11 +513,11 @@
     $('#reset-data').addEventListener('click',()=>{
       if(!confirm('Reset all habits and progress? This cannot be undone unless you have a backup.'))return;
       const theme=state.theme;state={habits:structuredClone(defaultHabits),categories:[...DEFAULT_CATEGORIES],logs:{},demo:false,theme,awards:[]};
-      filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Tracker reset. A fresh chapter begins!');
+      filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Tracker reset');
     });
     $('#export-data').addEventListener('click',()=>{
       const json=JSON.stringify({...state,exportedAt:new Date().toISOString()},null,2);
-      const url=URL.createObjectURL(new Blob([json],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=`dayflow-backup-${dateKey(today())}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);toast('Backup downloaded.');
+      const url=URL.createObjectURL(new Blob([json],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=`dayflow-backup-${dateKey(today())}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);toast('Backup downloaded');
     });
     $('#import-button').addEventListener('click',()=>$('#import-input').click());
     $('#import-input').addEventListener('change',async e=>{
@@ -529,7 +529,7 @@
         const cleaned=data.habits.map((h,i)=>({id:String(h.id||'import'+i).slice(0,100),name:String(h.name||'Habit').slice(0,48),category:cleanCategoryName(h.category)||'Lifestyle',icon:iconChoices.includes(h.icon)?h.icon:'sparkles',color:colorChoices.includes(h.color)?h.color:colorChoices[0],goal:clamp(Math.round(validNumber(h.goal)),1,100000),step:clamp(Math.round(validNumber(h.step)),1,100000),unit:String(h.unit||'time').slice(0,20)}));
         if(!confirm('Import this backup? Your current habits and history will be replaced.'))return;
         const cleanLogs={};for(const [key,log] of Object.entries(data.logs)){if(!/^\d{4}-\d{2}-\d{2}$/.test(key)||!log||typeof log!=='object')continue;cleanLogs[key]={};for(const h of cleaned){const n=Number(log[h.id]);if(Number.isFinite(n))cleanLogs[key][h.id]=clamp(n,0,h.goal)}}
-        state={habits:cleaned,categories:mergedCategories(data.categories,cleaned),logs:cleanLogs,theme:data.theme==='dark'?'dark':'light',demo:false,awards:Array.isArray(data.awards)?data.awards.filter(v=>MILESTONES.some(t=>t.days===v)):[]};syncAwards(false);setTheme(state.theme);filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Backup imported successfully!');
+        state={habits:cleaned,categories:mergedCategories(data.categories,cleaned),logs:cleanLogs,theme:data.theme==='dark'?'dark':'light',demo:false,awards:Array.isArray(data.awards)?data.awards.filter(v=>MILESTONES.some(t=>t.days===v)):[]};syncAwards(false);setTheme(state.theme);filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Backup imported');
       }catch(err){toast(err.message||'Could not read backup.')}finally{e.target.value=''}
     });
     document.querySelectorAll('.modal-backdrop').forEach(backdrop=>backdrop.addEventListener('click',e=>{if(e.target===backdrop)backdrop.classList.add('hidden')}));
