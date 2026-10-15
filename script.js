@@ -45,7 +45,8 @@
       droplet:'<path d="M24 3C19 11 9 22 9 30a15 15 0 0 0 30 0C39 22 29 11 24 3Z" fill="#4facf8" stroke="#277bdb" stroke-width="2"/><path d="M18 19c-4 6-5 10-4 14" fill="none" stroke="#d1f0ff" stroke-width="5" stroke-linecap="round"/><ellipse cx="30" cy="37" rx="4" ry="2" fill="#e2f8ff" opacity=".65"/>',
       book:'<path d="M23 12C15 7 9 8 4 10v27c8-3 14-2 20 2 6-4 12-5 20-2V10c-6-2-14-3-21 2Z" fill="#8664eb" stroke="#6445bd" stroke-width="2.3"/><path d="M24 15c-5-4-10-4-16-3v21c6-1 11 0 16 3V15Z" fill="#fff6eb"/><path d="M24 15c5-4 10-4 16-3v21c-6-1-11 0-16 3V15Z" fill="#e7daff"/><path d="M24 16v20" stroke="#8d72e8" stroke-width="2.3"/><path d="M12 18h7M29 18h7M12 23h7M29 23h7" stroke="#b4a3ef" stroke-width="1.8" stroke-linecap="round"/>',
       dumbbell:'<rect x="4" y="16" width="8" height="17" rx="3" fill="#ffb69a" stroke="#f27e6e" stroke-width="2"/><rect x="36" y="16" width="8" height="17" rx="3" fill="#ffb69a" stroke="#f27e6e" stroke-width="2"/><rect x="10" y="12" width="9" height="24" rx="3" fill="#fd8478" stroke="#e75c60" stroke-width="2"/><rect x="29" y="12" width="9" height="24" rx="3" fill="#fd8478" stroke="#e75c60" stroke-width="2"/><rect x="18" y="21" width="12" height="7" rx="3" fill="#b75a83"/>',
-      leaf:'<path d="M24 43C4 34 6 10 30 7c10-1 14-2 14-2 0 19-5 34-20 38Z" fill="#3ecbb0" stroke="#22a98b" stroke-width="2"/><path d="M13 36c6-12 13-15 23-22" stroke="#f0ffee" stroke-width="3.2" fill="none" stroke-linecap="round"/><path d="M23 26 22 17M27 23l9 1" stroke="#b9ffe7" stroke-width="2" fill="none"/>',
+      // The native lotus emoji (🪷) is missing from several emoji fonts. Use a hand-drawn SVG lotus instead.
+      leaf:'<path d="M23.7 37C15.2 37.5 6.2 32.7 6.8 20c9.2 1.9 15.8 6.9 16.9 17Z" fill="#5bd3be" stroke="#269f91" stroke-width="1.3"/><path d="M24.3 37C32.8 37.5 41.8 32.7 41.2 20c-9.2 1.9-15.8 6.9-16.9 17Z" fill="#60c4e8" stroke="#319eae" stroke-width="1.3"/><path d="M23.8 39.4C15.5 44.2 7.2 41.6 3 32c9.4-4.5 18.1-.8 20.8 7.4Z" fill="#41b99f" stroke="#269f91" stroke-width="1.3"/><path d="M24.2 39.4C32.5 44.2 40.8 41.6 45 32c-9.4-4.5-18.1-.8-20.8 7.4Z" fill="#47c6b1" stroke="#269f91" stroke-width="1.3"/><path d="M24 38C15.2 30.3 15.8 17.4 24 9c8.2 8.4 8.8 21.3 0 29Z" fill="#92e7c7" stroke="#37b89e" stroke-width="1.7"/><path d="M24 15c-4.3 6.8-4.3 13.4 0 19" fill="none" stroke="#effff8" stroke-width="2.4" stroke-linecap="round" opacity=".82"/><path d="M12 42.2c7.7 3.4 16.3 3.4 24 0" fill="none" stroke="#1d9b88" stroke-width="2.5" stroke-linecap="round"/>',
       sun:'<circle cx="24" cy="24" r="11" fill="#ffd063" stroke="#efad36" stroke-width="2"/><circle cx="21" cy="21" r="4" fill="#ffeb9b" opacity=".9"/><path d="M24 3v6M24 39v6M3 24h6M39 24h6M9 9l5 5M34 34l5 5M9 39l5-5M34 14l5-5" stroke="#ffbb54" stroke-width="3.5" stroke-linecap="round"/>',
       moon:'<path d="M33 6C11 4 5 30 18 39c10 8 26 0 26-12-12 8-26-8-11-21Z" fill="#9e91ee" stroke="#7d71d5" stroke-width="2"/><path d="m11 8 1.5 4L17 14l-4.5 1.5L11 20l-1.5-4.5L5 14l4.5-2L11 8ZM35 3l1 3 3 1-3 1-1 3-1-3-3-1 3-1 1-3Z" fill="#ffda7c"/>',
       brain:'<path d="M23 10C12 1 4 12 8 20c-9 8 2 21 13 17 1 8 7 7 9 0 12 3 21-12 10-18 2-11-11-18-17-9Z" fill="#c9a2f1" stroke="#a67ad9" stroke-width="2.5"/><path d="M24 12v24M17 15c6 2 6 7 4 11M31 18c-6 1-6 5-5 8M13 28c4-3 7-2 8 1M35 29c-4-4-7-2-9 1" stroke="#e9d5ff" fill="none" stroke-width="2.5" stroke-linecap="round"/>',
@@ -69,7 +70,13 @@
     const emojiIds=new Set(iconCatalog.map(i=>i.id));
     function emojiFor(name){return nativeEmoji[name] || (typeof name==='string'&&name.startsWith('emoji:')&&emojiIds.has(name)?name.slice(6):null)}
     const oldLivelyIcon=livelyIcon;
-    livelyIcon=function(name,size=27){const emoji=emojiFor(name);return emoji?`<span class="habit-emoji" style="--emoji-size:${size}px" aria-hidden="true">${emoji}</span>`:oldLivelyIcon(name,size)};
+    livelyIcon=function(name,size=27){
+      // Preserve stored icon IDs but render the Meditation lotus as SVG on every device.
+      // This avoids the missing-glyph square for the 🪷 emoji on Windows/Android.
+      if(name==='leaf'||name==='emoji:🪷')return oldLivelyIcon('leaf',size);
+      const emoji=emojiFor(name);
+      return emoji?`<span class="habit-emoji" style="--emoji-size:${size}px" aria-hidden="true">${emoji}</span>`:oldLivelyIcon(name,size);
+    };
     function categoryEmoji(name){return ({Health:'💗',Mind:'🧠',Lifestyle:'🌿'})[name]||'✨'}
     const DEFAULT_CATEGORIES=['Health','Mind','Lifestyle'];
     function cleanCategoryName(name){return String(name||'').trim().replace(/\s+/g,' ').slice(0,24)}
