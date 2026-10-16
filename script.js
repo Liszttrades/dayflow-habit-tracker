@@ -381,13 +381,15 @@
       progressAnimations.delete(el);
       progressPrevious.set(el,newValue);
       const draw=n=>el.style.setProperty(property,`${n}${unit}`);
-      if(!Number.isFinite(old)||old===newValue||reduceMotion()){draw(newValue);return;}
+      if(old===newValue||reduceMotion()){draw(newValue);return;}
+      // New rings also fill from zero on their first visible render.
+      const startValue=Number.isFinite(old)?old:0;
       const started=performance.now(),time=Math.min(980,Math.max(460,duration));
-      draw(old);
+      draw(startValue);
       const tick=now=>{
         if(!el.isConnected)return;
         const t=Math.min(1,(now-started)/time);
-        const value=old+(newValue-old)*easeMetric(t);
+        const value=startValue+(newValue-startValue)*easeMetric(t);
         draw(t===1?newValue:value);
         if(t<1)progressAnimations.set(el,requestAnimationFrame(tick));
         else progressAnimations.delete(el);
@@ -456,16 +458,38 @@
       const scheduled=habitSet(selectedDate).filter(h=>dueHabit(selectedDate,h)||validSchedule(h.schedule).type==='weekly');
       const matches=scheduled.filter(h=>(filter==='All'||h.category===filter)&&h.name.toLowerCase().includes(search.toLowerCase()));
       $('#habits-count').textContent=`${trackedHabits(selectedDate).length} scheduled · ${scheduled.filter(h=>validSchedule(h.schedule).type==='weekly').length} flexible`;
-      $('#habit-list').innerHTML=matches.length?matches.map(habitMarkup).join(''):`<div class="empty"><div class="empty-icon">${icon('calendar',24)}</div><h3>Nothing scheduled here</h3><p>${state.habits.length?'Try another day or filter.':'Add your first habit to get started.'}</p></div>`;
+      const list=$('#habit-list');
+      list.innerHTML=matches.length?matches.map(habitMarkup).join(''):`<div class="empty"><div class="empty-icon">${icon('calendar',24)}</div><h3>Nothing scheduled here</h3><p>${state.habits.length?'Try another day or filter.':'Add your first habit to get started.'}</p></div>`;
+      const fillTargets=[];
+      const rows=new Map([...list.querySelectorAll('[data-habit-id]')].map(row=>[row.dataset.habitId,row]));
       for(const h of matches){
         const amount=getAmount(selectedDate,h.id),percent=clamp(Math.round(amount/h.goal*100),0,100);
-        const previous=habitReadouts.get(h.id);
-        const row=[...$('#habit-list').querySelectorAll('[data-habit-id]')].find(el=>el.dataset.habitId===h.id);
+        const previous=habitReadouts.get(h.id),row=rows.get(h.id);
         if(previous){
           countTo(row?.querySelector('[data-amount-number]'),amount,{from:previous.amount,format:n=>numberLabel(Math.round(n))});
           countTo(row?.querySelector('[data-percent-number]'),percent,{from:previous.percent,format:n=>Math.round(n)});
         }
+        // All visible habit rings and bars share one smooth fill behavior, including
+        // imported habits, newly created habits, filters and date navigation.
+        const fromPercent=previous?.percent??0;
+        if(row&&!reduceMotion()&&fromPercent!==percent){
+          const ring=row.querySelector('.habit-ring'),bar=row.querySelector('.small-fill');
+          ring.style.setProperty('--ring-progress',`${fromPercent}%`);
+          bar.style.setProperty('--pct',`${fromPercent}%`);
+          fillTargets.push({ring,bar,percent});
+        }
         habitReadouts.set(h.id,{amount,percent});
+      }
+      if(fillTargets.length){
+        // Commit the starting state before the browser transitions to the target.
+        void list.offsetWidth;
+        requestAnimationFrame(()=>requestAnimationFrame(()=>{
+          for(const {ring,bar,percent} of fillTargets){
+            if(!ring.isConnected||!bar.isConnected)return;
+            ring.style.setProperty('--ring-progress',`${percent}%`);
+            bar.style.setProperty('--pct',`${percent}%`);
+          }
+        }));
       }
     }
     function renderCalendar(){
@@ -516,21 +540,6 @@
       setTimeout(()=>nodes.forEach(el=>el.remove()),1450);
     }
 
-    function animateHabitProgress(id,fromPct,toPct){
-      if(reduceMotion()||fromPct===toPct)return;
-      const item=[...document.querySelectorAll('#habit-list [data-habit-id]')].find(el=>el.dataset.habitId===id);
-      if(!item)return;
-      const circle=item.querySelector('.habit-ring'),bar=item.querySelector('.small-fill');
-      circle.style.setProperty('--ring-progress',fromPct+'%');
-      bar.style.setProperty('--pct',fromPct+'%');
-      // Force browser to commit the previous geometry before transitioning to the new value.
-      void circle.offsetWidth;
-      requestAnimationFrame(()=>{
-        if(!circle.isConnected)return;
-        circle.style.setProperty('--ring-progress',toPct+'%');
-        bar.style.setProperty('--pct',toPct+'%');
-      });
-    }
     function animatePerfectWeek(day){
       if(reduceMotion())return;
       const start=startOfWeek(selectedDate),index=dayDiff(day,start),column=$('#week-chart').children[index];
@@ -543,13 +552,11 @@
       const h=habitSet(selectedDate).find(h=>h.id===id);if(!h)return;
       if(dayDiff(selectedDate,today())>0){toast('You can plan future habits, but log them on the day.');return}
       const wasComplete=completed(selectedDate,h),key=dateKey(selectedDate),before=dayStats(selectedDate);
-      const prevPct=Math.round(Math.min(1,getAmount(selectedDate,id)/h.goal)*100);
       if(key<dateKey(today())&&!state.snapshots[key])state.snapshots[key]=habitSet(selectedDate).map(snapshotHabit);
       if(!state.logs[key])state.logs[key]={};state.logs[key][id]=clamp(val,0,h.goal);
       save();render();
       $('#global-ring').classList.remove('stat-refreshed');void $('#global-ring').offsetWidth;$('#global-ring').classList.add('stat-refreshed');
-      const nowComplete=completed(selectedDate,h),nextPct=Math.round(Math.min(1,getAmount(selectedDate,id)/h.goal)*100);
-      animateHabitProgress(id,prevPct,nextPct);
+      const nowComplete=completed(selectedDate,h);
       if(!wasComplete && nowComplete){
         const item=[...document.querySelectorAll('#habit-list [data-habit-id]')].find(el=>el.dataset.habitId===id);
         if(item){item.classList.add('habit-just-finished');burstAt(item.querySelector('.done-button'),h.color,18);setTimeout(()=>item.classList.remove('habit-just-finished'),900)}
@@ -764,7 +771,14 @@
       snapshotPast();
       if(editingId){const i=state.habits.findIndex(h=>h.id===editingId);if(i>=0)state.habits[i]={...state.habits[i],...payload}}
       else state.habits.push({id:makeId(),createdAt:dateKey(today()),archivedAt:null,...payload});
-      const wasEditing=!!editingId;save();closeModal('#habit-modal-backdrop');filter='All';search='';$('#habit-search').value='';render();toast(wasEditing?'Habit updated!':'New habit added!');
+      const wasEditing=!!editingId;
+      const newHabitId=wasEditing?null:state.habits[state.habits.length-1]?.id;
+      save();closeModal('#habit-modal-backdrop');filter='All';search='';$('#habit-search').value='';render();
+      if(newHabitId&&!reduceMotion()){
+        const item=[...$('#habit-list').querySelectorAll('[data-habit-id]')].find(el=>el.dataset.habitId===newHabitId);
+        item?.classList.add('habit-newly-created');
+      }
+      toast(wasEditing?'Habit updated!':'New habit added!');
     });
     $('#delete-habit').addEventListener('click',()=>{
       if(!editingId)return;const target=state.habits.find(h=>h.id===editingId);if(!target)return;
@@ -818,24 +832,8 @@
       const id=b.dataset.nav;document.querySelectorAll('[data-nav]').forEach(el=>el.classList.toggle('active',el===b));
       closeMobile();document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});
     }));
-    // First paint: one gentle progress sweep. No ambient animations or repeated scroll effects.
-    function animateFirstPaint(){
-      if(reduceMotion())return;
-      const rings=[...document.querySelectorAll('#habit-list .habit-ring')].map(el=>[el,el.style.getPropertyValue('--ring-progress')]);
-      const meters=[...document.querySelectorAll('#habit-list .small-fill')].map(el=>[el,el.style.getPropertyValue('--pct')]);
-      const columns=[...document.querySelectorAll('#week-chart .week-bar')].map(el=>[el,el.style.getPropertyValue('--bar')]);
-      for(const [el] of rings)el.style.setProperty('--ring-progress','0%');
-      for(const [el] of meters)el.style.setProperty('--pct','0%');
-      for(const [el] of columns)el.style.setProperty('--bar','0%');
-      void document.body.offsetWidth;
-      requestAnimationFrame(()=>requestAnimationFrame(()=>{
-        for(const [el,pct] of rings)if(el.isConnected)el.style.setProperty('--ring-progress',pct);
-        for(const [el,pct] of meters)if(el.isConnected)el.style.setProperty('--pct',pct);
-        for(const [el,pct] of columns)if(el.isConnected)el.style.setProperty('--bar',pct);
-      }));
-    }
+    // Rings, bars and weekly columns now fill through their normal render paths.
     syncAwards(false);setTheme(state.theme);render();
     document.body.dataset.dayflowReady='true';
-    animateFirstPaint();
     })();
   

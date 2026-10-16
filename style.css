@@ -994,3 +994,24 @@ body.dark .schedule-caption{color:#b5b3cd}
 .progress-fill{transition:width .9s var(--ease-clean),box-shadow .3s}
 .week-bar{transition:height .88s var(--ease-clean),filter .25s,box-shadow .25s}
 .global-ring,.stats .streak-visual,.stats .weekly-orb{will-change:transform,box-shadow,--ring-progress}
+
+
+/* Seamless ring palette: continuous at 100%, never a cyan/purple cut. */
+.stats .weekly-orb{
+  background:
+    conic-gradient(from 0deg,transparent 0 var(--ring-progress),var(--ring-track) var(--ring-progress) 100%),
+    conic-gradient(from 0deg,#8f77ff 0%,#b298ff 23%,#61d4c8 49%,#75b7ef 72%,#8f77ff 100%);
+  transition:box-shadow .35s ease,transform .35s ease;
+}
+/* The rings and top weekly line are interpolated by the shared frame animation,
+   while individual habit rings and bars use one direct CSS transition. */
+#global-ring,#streak-visual,#weekly-orb{transition-property:filter,box-shadow,transform}
+#weekly-progress-track{transition:box-shadow .3s ease}
+.habit-ring{transition:--ring-progress .85s cubic-bezier(.22,1,.36,1),filter .3s ease,box-shadow .3s ease}
+.habit-meter .small-fill{transition:width .85s cubic-bezier(.22,1,.36,1),box-shadow .3s ease}
+.habit-newly-created{animation:habit-entry .4s cubic-bezier(.22,1,.36,1) both}
+@keyframes habit-entry{from{opacity:.55;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){
+  .habit-newly-created{animation:none!important}
+  .habit-ring,.habit-meter .small-fill,#global-ring,#streak-visual,#weekly-orb,#weekly-progress-track{transition:none!important}
+}

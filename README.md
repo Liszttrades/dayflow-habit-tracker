@@ -1,13 +1,14 @@
-# Dayflow — Dark Dropdown + Animated Counters Fix
+# Dayflow — Seamless Progress Motion Edition
 
 This is the complete GitHub Pages-ready release. Upload all files in this folder to the **root** of the `dayflow-habit-tracker` repository.
 
 ## Changes
-- Fixed low-contrast repeat schedule and weekly target dropdowns in dark mode.
-- Removed the archived habits subsection from Settings; the Archive Inbox remains accessible beside Add in the habit list and supports restoring habits.
-- Added smooth, change-triggered count-up transitions to dashboard completion, daily target %, streak days, weekly %, weekly activity average, habit amounts and percentages, plus insight percentages and week-over-week change.
-- Preserved habit data format, streak and floating animations, light mode, archived history, and reduced-motion preference.
-- Separate `index.html`, `style.css`, and `script.js` with versioned assets to help bypass stale GitHub Pages caches.
+- Seamless 100% weekly progress ring. The gradient now loops continuously without a visible join, while the ring still fills when progress changes.
+- Unified 850 ms progress fill motion on **every** habit ring and horizontal bar, including added, restored, imported and filtered habits.
+- Gentle entry state for newly created habits; subsequent clicks animate the same as the original habits.
+- Improved initial loading: visible habit rings fill from zero; top progress circles/weekly line and weekly columns keep their smooth transitions.
+- Kept the existing colors, streak artwork, floating motion, custom dropdowns, archive inbox, progress counts and light/dark themes.
+- No storage-key or backup-format changes. Supports reduced-motion preference.
 
 ## Install
 1. In your current Dayflow site, export a backup first from Settings.
