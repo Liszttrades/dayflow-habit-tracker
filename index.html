@@ -68,7 +68,7 @@
         <section class="stats" aria-label="Your habit statistics">
           <div class="stat-card completion-stat">
             <div class="stat-main"><div class="stat-label"><span data-icon="target"></span> Scheduled completion</div><div class="stat-value" id="completion-count"><span id="completion-done-count" class="metric-number">0</span> <span class="metric-total">/ <span id="completion-total-count">10</span></span></div><p class="stat-description" id="completion-desc">Habits completed today</p></div>
-            <div class="global-ring" id="global-ring" style="--pct:0"><div class="global-ring-inner"><strong id="global-percent">0%</strong><span>target progress</span></div></div>
+            <div class="global-ring" id="global-ring" style="--ring-progress:0%"><div class="global-ring-inner"><strong id="global-percent">0%</strong><span>target progress</span></div></div>
           </div>
           <div class="stat-card streak-stat" id="streak-stat" data-stage="0">
             <div class="stat-main">
@@ -77,7 +77,7 @@
               <div class="stat-detail"><span data-icon="sparkles"></span><span id="streak-note">One completed habit keeps it alive</span></div>
               <div class="streak-next" id="streak-next">Unlock your first badge at 3 days.</div>
             </div>
-            <div class="stat-visual streak-visual" aria-hidden="true"><div class="streak-visual-inner"><span class="orb-twinkle orb-twinkle-a">✦</span><div class="streak-stat-flame" id="streak-stat-flame"></div><span class="orb-twinkle orb-twinkle-b">✧</span></div></div>
+            <div class="stat-visual streak-visual" id="streak-visual" style="--ring-progress:0%" aria-hidden="true"><div class="streak-visual-inner"><span class="orb-twinkle orb-twinkle-a">✦</span><div class="streak-stat-flame" id="streak-stat-flame"></div><span class="orb-twinkle orb-twinkle-b">✧</span></div></div>
           </div>
           <div class="stat-card weekly-stat-card">
             <div class="stat-main">
@@ -86,7 +86,7 @@
               <div class="stat-detail"><span data-icon="check-circle"></span><span id="weekly-note">Your weekly average</span></div>
               <div class="progress-track"><div class="progress-fill" id="weekly-progress-track"></div></div>
             </div>
-            <div class="stat-visual weekly-orb" id="weekly-orb" style="--pct:0" aria-hidden="true"><div class="weekly-orb-inner">
+            <div class="stat-visual weekly-orb" id="weekly-orb" style="--ring-progress:0%" aria-hidden="true"><div class="weekly-orb-inner">
               <svg class="weekly-orb-art" width="62" height="62" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <defs><linearGradient id="weekSparkGradient" x1="12" y1="56" x2="58" y2="12"><stop stop-color="#54d5ca"/><stop offset="1" stop-color="#a98cff"/></linearGradient></defs>
                 <rect x="15" y="40" width="10" height="20" rx="5" fill="#8f80e8" opacity=".72"/>

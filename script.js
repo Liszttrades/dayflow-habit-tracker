@@ -370,6 +370,44 @@
       };
       metricAnimations.set(el,requestAnimationFrame(tick));
     }
+    const progressPrevious=new WeakMap(),progressAnimations=new WeakMap();
+    function animateProgressProp(el,target,{property='--ring-progress',from,duration=840,unit='%'}={}){
+      if(!el)return;
+      const newValue=Math.max(0,Math.min(100,Number(target)||0));
+      const animation=progressAnimations.get(el);
+      const old=Number.isFinite(from)?from:progressPrevious.get(el);
+      if(animation && old===newValue)return;
+      if(animation)cancelAnimationFrame(animation);
+      progressAnimations.delete(el);
+      progressPrevious.set(el,newValue);
+      const draw=n=>el.style.setProperty(property,`${n}${unit}`);
+      if(!Number.isFinite(old)||old===newValue||reduceMotion()){draw(newValue);return;}
+      const started=performance.now(),time=Math.min(980,Math.max(460,duration));
+      draw(old);
+      const tick=now=>{
+        if(!el.isConnected)return;
+        const t=Math.min(1,(now-started)/time);
+        const value=old+(newValue-old)*easeMetric(t);
+        draw(t===1?newValue:value);
+        if(t<1)progressAnimations.set(el,requestAnimationFrame(tick));
+        else progressAnimations.delete(el);
+      };
+      progressAnimations.set(el,requestAnimationFrame(tick));
+    }
+    function animateWidthPercent(el,target,{from,duration=820}={}){
+      if(!el)return;
+      animateProgressProp(el,target,{property:'--line-progress',from,duration});
+      el.style.width=`var(--line-progress)`;
+    }
+    function streakFillPercent(streak){
+      if(streak>=MILESTONES[MILESTONES.length-1].days)return 100;
+      let prev=0,next=MILESTONES[0].days;
+      for(let i=0;i<MILESTONES.length;i++){
+        if(streak<MILESTONES[i].days){next=MILESTONES[i].days;prev=i?MILESTONES[i-1].days:0;break;}
+      }
+      const span=Math.max(1,next-prev);
+      return Math.max(0,Math.min(100,((streak-prev)/span)*100));
+    }
     let renderedHabitsDate=null;
     const habitReadouts=new Map();
     const focusReadouts=new Map();
@@ -378,7 +416,8 @@
       countTo($('#completion-done-count'),s.done,{format:n=>Math.round(n)});
       countTo($('#completion-total-count'),s.total,{format:n=>Math.round(n)});
       $('#completion-desc').textContent=`Habits finished / scheduled ${dayDiff(selectedDate,today())===0?'today':'on this day'}`;
-      countTo($('#global-percent'),s.percent,{suffix:'%',format:n=>Math.round(n)});$('#global-ring').style.setProperty('--pct',s.percent);
+      countTo($('#global-percent'),s.percent,{suffix:'%',format:n=>Math.round(n)});
+      animateProgressProp($('#global-ring'),s.percent);
       $('.completion-stat').classList.toggle('day-all-complete',s.perfect);
       countTo($('#streak-value'),streak,{format:n=>Math.round(n)});
       $('#streak-note').textContent=streak>0?`${streak} consecutive active ${streak===1?'day':'days'}`:'Finish one habit to start';
@@ -386,11 +425,14 @@
       $('#streak-stat').dataset.stage=String(tier?.days||0);
       $('#streak-stat').style.setProperty('--streak-glow',tier?.glow||'#ff9e3728');
       $('#streak-stat').style.setProperty('--streak-accent',tier?.accent||'#f69b40');
+      animateProgressProp($('#streak-visual'),streakFillPercent(streak));
       $('#streak-stat-flame').innerHTML=flameArt(tier||MILESTONES[0],67);
       $('#streak-stat-flame').style.opacity=streak?1:.35;
       $('#streak-tier-name').textContent=tier?`${tier.name} ${tier.days}d`:'No badge yet';
       $('#streak-next').textContent=next?`${Math.max(0,next.days-streak)} more consecutive ${next.days-streak===1?'day':'days'} to your ${next.name} badge`:'The highest flame is yours! Keep going.';
-      countTo($('#weekly-stat'),week.avg,{format:n=>Math.round(n)});$('#weekly-orb').style.setProperty('--pct',week.avg);$('#weekly-progress-track').style.width=week.avg+'%';
+      countTo($('#weekly-stat'),week.avg,{format:n=>Math.round(n)});
+      animateProgressProp($('#weekly-orb'),week.avg);
+      animateWidthPercent($('#weekly-progress-track'),week.avg);
       $('#weekly-progress-track').parentElement.classList.toggle('week-perfect',week.avg===100);
       $('#weekly-note').textContent=`${week.active} active ${week.active===1?'day':'days'} this week`;
     }
@@ -444,7 +486,8 @@
       countTo($('#weekly-summary-value'),w.avg,{suffix:'%',format:n=>Math.round(n)});
       $('#week-completed-note').textContent=`${w.active} of ${w.days.filter(d=>dayDiff(d,today())<=0).length} days active`;
       const labels=['M','T','W','T','F','S','S'];
-      $('#week-chart').innerHTML=w.days.map((d,i)=>{const pct=dayStats(d).percent,isToday=dayDiff(d,today())===0,future=dayDiff(d,today())>0;return `<div class="week-col ${isToday?'today':''} ${future?'future':''} ${pct===100?'all-done':''}" title="${escapeHTML(formatDay(d))} — ${pct}%"><div class="week-bar-box"><div class="week-bar" style="--bar:${pct}%"></div></div><label>${labels[i]}</label></div>`}).join('');
+      $('#week-chart').innerHTML=w.days.map((d,i)=>{const pct=dayStats(d).percent,isToday=dayDiff(d,today())===0,future=dayDiff(d,today())>0;return `<div class="week-col ${isToday?'today':''} ${future?'future':''} ${pct===100?'all-done':''}" title="${escapeHTML(formatDay(d))} — ${pct}%"><div class="week-bar-box"><div class="week-bar" style="--bar:0%;--bar-target:${pct}%"></div></div><label>${labels[i]}</label></div>`}).join('');
+      requestAnimationFrame(()=>$('#week-chart')?.querySelectorAll('.week-bar').forEach(bar=>bar.style.setProperty('--bar',bar.style.getPropertyValue('--bar-target')||'0%')));
       const ranked=state.habits.filter(h=>!h.archivedAt).map(h=>({...h,days:w.days.filter(d=>dayDiff(d,today())<=0&&habitSet(d).some(x=>x.id===h.id&&completed(d,x))).length})).sort((a,b)=>b.days-a.days).slice(0,3);
       $('#leader-list').innerHTML=ranked.length?ranked.map((h,i)=>`<div class="leader-item"><span class="medal">${i+1}</span><div class="leader-icon" style="--hsoft:${soft(h.color)};--hcolor:${h.color}">${livelyIcon(h.icon,24)}</div><div class="leader-info"><strong>${escapeHTML(h.name)}</strong><span>${escapeHTML(h.category)}</span></div><span class="leader-count">${h.days}/7</span></div>`).join(''):'<p class="subhead">Create a habit to see your weekly highlights.</p>';
     }
