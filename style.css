@@ -698,3 +698,87 @@ body{font-family:"SF Pro Text","SF Pro Display",Inter,-apple-system,BlinkMacSyst
   .celebration-flame{height:238px;width:196px}
   .celebration-flame svg{height:210px;width:174px}
 }
+
+
+/* Dayflow — measured, tactile motion and full category icon parity */
+/* Flat surfaces on purpose: no grain, noise textures, moving background or decorative overlays. */
+body{background-image:none!important}
+.category-popover{width:clamp(292px,31vw,340px);max-width:min(340px,calc(100vw - 30px));box-shadow:0 17px 42px rgba(16,12,39,.17),0 3px 12px rgba(16,12,39,.08)}
+.category-icon-create{margin:1px 0 12px}
+.category-icon-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;gap:10px}
+.category-icon-label{margin:0}
+.category-icon-count{font-size:10px;font-weight:650;color:var(--ink-light)}
+.category-icon-search-wrap{width:100%;height:36px;display:flex;align-items:center;gap:8px;background:var(--surface-alt);border:1px solid var(--border);border-radius:10px;padding:0 11px;color:var(--ink-muted);margin-bottom:10px;transition:border-color .2s ease,box-shadow .2s ease}
+.category-icon-search-wrap svg{width:15px;height:15px}
+.category-icon-search-wrap:focus-within{border-color:#a99bfa;box-shadow:0 0 0 3px #9c8dff21}
+.category-icon-search-wrap input{flex:1;min-width:0;height:100%;padding:0;background:transparent;border:0;outline:0!important;box-shadow:none!important;font-size:12px;color:var(--ink)}
+.category-icon-search-wrap input:focus{outline:0!important;border:0!important;box-shadow:none!important}
+.category-icon-picker{grid-template-columns:repeat(6,minmax(0,1fr));max-height:190px;overflow-y:auto;overscroll-behavior:contain;padding:3px 3px 6px;margin:0;scrollbar-width:thin;scrollbar-color:var(--ink-light) transparent}
+.category-icon-choice{height:42px;min-width:0;border-radius:12px;box-shadow:none;transform:none!important}
+.category-icon-choice:hover{border-color:#bcb0ff;background:var(--accent-soft);box-shadow:none}
+.category-icon-choice.active{background:var(--accent-soft);border:1.5px solid var(--accent);box-shadow:0 0 0 2px #907ef01d}
+.category-icon-choice:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.category-icon-choice .habit-emoji{--emoji-size:22px!important}
+.category-icon-choice .lively-icon{width:24px;height:24px}
+.category-icon-empty{grid-column:1/-1;color:var(--ink-muted);text-align:center;font-size:12px;padding:18px 3px}
+.selected-cat-icon .lively-icon,.cat-emoji .lively-icon{height:20px;width:20px}
+.selected-cat-icon,.cat-emoji{background:var(--surface-alt)}
+.category-create label.category-icon-search-wrap{margin-bottom:10px}
+/* Quiet but active controls: hover/press create feedback, idle elements stay still. */
+.habit-item{animation:none;transition:background .22s ease,padding .22s ease,box-shadow .22s ease}
+@media (hover:hover){
+ .habit-item:hover{background:color-mix(in srgb,var(--accent) 2.6%,var(--surface));border-radius:13px}
+ .habit-item:hover .habit-icon{transform:translateY(-2px) scale(1.04)}
+ .habit-item:hover .habit-ring{filter:drop-shadow(0 3px 8px color-mix(in srgb,var(--habit-color) 18%,transparent))}
+ .badge-step:hover .badge-art svg{transform:translateY(-4px) rotate(-3deg)}
+ .nav-link:hover svg{transform:translateX(2px)}
+}
+.habit-icon,.habit-ring,.badge-step .badge-art svg,.nav-link svg{transition:transform .25s cubic-bezier(.2,.8,.2,1),filter .25s ease}
+button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button:active:not(:disabled){transform:scale(.97)}
+.done-button:active:not(:disabled),.primary-btn:active:not(:disabled),.category-icon-choice:active:not(:disabled){transform:scale(.94)!important}
+.stat-refreshed{animation:stat-respond .55s cubic-bezier(.2,.75,.2,1)}
+@keyframes stat-respond{0%{transform:scale(.984)}55%{transform:scale(1.022)}100%{transform:scale(1)}}
+/* Return the original dramatic flame with softened spring damping. Transform-only choreography helps smooth mobile rendering. */
+.celebration-backdrop{background:rgba(13,10,31,.78);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);animation:celebration-fade .32s ease-out both}
+.celebration-card{animation:celebration-card-return .49s cubic-bezier(.22,.9,.25,1) both;box-shadow:0 24px 76px #0008,0 0 50px var(--celebrate-glow,#ffa64c20)}
+.celebration-card::before{animation:none}
+.celebration-art{overflow:hidden}
+.celebration-flame{width:226px;height:272px;transform-origin:50% 80%;animation:flame-hero-return .95s .13s both;will-change:transform,opacity;filter:drop-shadow(0 14px 26px var(--celebrate-glow,#ff942d59))}
+.celebration-flame svg{width:200px;height:244px;animation:flame-breathe-return 3.2s 1.1s ease-in-out infinite;transform-origin:50% 85%;filter:drop-shadow(0 8px 19px var(--celebrate-glow,#ff942d55))}
+.celebration-rays{animation:ray-rotate-soft 23s linear infinite;opacity:.8;will-change:transform}
+.celebration-halo{animation:halo-soft-return 4s ease-in-out infinite;filter:blur(6px)}
+.celebration-sparkle{animation:soft-sparkle 3.3s ease-in-out infinite}
+.celebration-go{transition:transform .21s cubic-bezier(.2,.8,.2,1),background .2s ease,box-shadow .2s ease}
+.celebration-go:hover{transform:translateY(-2px)}
+@keyframes celebration-card-return{0%{opacity:0;transform:translateY(18px) scale(.976)}100%{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes flame-hero-return{
+ 0%{opacity:0;transform:translateY(56px) scale(.48) rotate(-9deg)}
+ 43%{opacity:1;transform:translateY(-9px) scale(1.08) rotate(3deg)}
+ 69%{transform:translateY(3px) scale(.982) rotate(-1.4deg)}
+ 85%{transform:translateY(-1px) scale(1.008) rotate(.5deg)}
+ 100%{opacity:1;transform:translateY(0) scale(1) rotate(0)}
+}
+@keyframes flame-breathe-return{0%,100%{transform:translateY(0) rotate(-1deg) scale(1)}50%{transform:translateY(-3px) rotate(1.8deg) scale(1.03)}}
+@keyframes halo-soft-return{0%,100%{transform:scale(.99);opacity:.72}50%{transform:scale(1.07);opacity:1}}
+@media(max-width:540px){
+ .category-popover{left:0;max-width:min(340px,calc(100vw - 34px))}
+ .category-icon-picker{grid-template-columns:repeat(6,minmax(0,1fr));max-height:162px;gap:6px}
+ .category-icon-choice{height:37px;border-radius:10px}
+ .category-icon-choice .habit-emoji{--emoji-size:20px!important}
+ .celebration-flame{width:199px;height:241px}
+ .celebration-flame svg{width:177px;height:213px}
+}
+@media(prefers-reduced-motion:reduce){
+ .celebration-card,.celebration-flame,.celebration-flame svg,.celebration-rays,.celebration-halo,.celebration-sparkle,.stat-refreshed{animation:none!important;will-change:auto!important}
+ .habit-icon,.habit-ring,.badge-step .badge-art svg,.nav-link svg{transition:none!important}
+}
+/* Override the generic form-label rule so icon search stays on one line. */
+.field .category-create label.category-icon-search-wrap{display:flex;align-items:center;gap:8px;margin:0 0 10px;padding:0 11px;font-weight:500}
+.field .category-create #category-icon-search{display:block;width:100%;height:100%;padding:0;margin:0;background:transparent;border:0;border-radius:0;box-shadow:none!important;outline:none!important;font-size:12px;font-weight:500;line-height:normal}
+
+/* Popover stays practical on phone-sized form overlays. */
+@media(max-width:540px){
+ .category-popover .category-options{max-height:128px}
+ .category-popover .category-icon-picker{max-height:116px}
+}

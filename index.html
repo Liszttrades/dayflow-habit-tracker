@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f7f8fc" />
   <meta name="description" content="Dayflow — your personal habit tracker with daily progress rings, calendar, weekly insights, and streaks." />
   <title>Dayflow — Make every day count</title>
-  <link rel="stylesheet" href="./style.css?v=5">
+  <link rel="stylesheet" href="./style.css?v=6">
 </head>
 <body>
   <div class="app">
@@ -154,7 +154,8 @@
                 <div class="category-create">
                   <label for="new-category-input">+ Create your own</label>
                   <div class="category-icon-create">
-                    <div class="category-icon-label">Choose an icon</div>
+                    <div class="category-icon-heading"><span class="category-icon-label">Choose an icon</span><span id="category-icon-count" class="category-icon-count">49 icons</span></div>
+                    <label class="category-icon-search-wrap" for="category-icon-search"><span aria-hidden="true" data-icon="search"></span><input type="search" id="category-icon-search" placeholder="Search icons" autocomplete="off" maxlength="40" aria-label="Search category icons"></label>
                     <div class="category-icon-picker" id="category-icon-picker" role="group" aria-label="Choose a category icon"></div>
                   </div>
                   <div class="category-create-row"><input id="new-category-input" type="text" placeholder="e.g. Creative" maxlength="24" autocomplete="off"/><button type="button" id="category-add" aria-label="Add new category" title="Add category"><span data-icon="plus"></span> Add</button></div>
@@ -214,6 +215,6 @@
   </div>
   <div id="effect-layer" class="effect-layer" aria-hidden="true"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script.js?v=5" defer></script>
+  <script src="./script.js?v=6" defer></script>
 </body>
 </html>

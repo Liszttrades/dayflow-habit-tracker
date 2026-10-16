@@ -69,18 +69,18 @@
     const emojiIds=new Set(iconCatalog.map(i=>i.id));
     function emojiFor(name){return nativeEmoji[name] || (typeof name==='string'&&name.startsWith('emoji:')&&emojiIds.has(name)?name.slice(6):null)}
     const oldLivelyIcon=livelyIcon;
-    livelyIcon=function(name,size=27){const emoji=emojiFor(name);return emoji?`<span class="habit-emoji" style="--emoji-size:${size}px" aria-hidden="true">${emoji}</span>`:oldLivelyIcon(name,size)};
+    livelyIcon=function(name,size=27){if(name==='leaf')return oldLivelyIcon(name,size);const emoji=emojiFor(name);return emoji?`<span class="habit-emoji" style="--emoji-size:${size}px" aria-hidden="true">${emoji}</span>`:oldLivelyIcon(name,size)};
     const DEFAULT_CATEGORIES=['Health','Mind','Lifestyle'];
     const DEFAULT_CATEGORY_ICONS={Health:'heart',Mind:'brain',Lifestyle:'leaf'};
-    const CATEGORY_ICON_CHOICES=['heart','brain','leaf','sparkles','book','droplet','sun','moon','clock','target'];
+    const CATEGORY_ICON_CHOICES=iconCatalog.map(item=>item.id); // Same 49 icons as the habit picker
     function cleanCategoryName(name){return String(name||'').trim().replace(/\s+/g,' ').slice(0,24)}
     function normalizeCategoryIcons(saved={},categories=[]){
       const base={...DEFAULT_CATEGORY_ICONS};
-      if(saved&&typeof saved==='object') for(const [name,iconId] of Object.entries(saved)){const clean=cleanCategoryName(name);if(clean&&typeof iconId==='string') base[clean]=iconId;}
+      if(saved&&typeof saved==='object') for(const [name,iconId] of Object.entries(saved)){const clean=cleanCategoryName(name);if(clean&&CATEGORY_ICON_CHOICES.includes(iconId)) base[clean]=iconId;}
       for(const c of categories){const clean=cleanCategoryName(c);if(clean&&!base[clean]) base[clean]='sparkles';}
       return base;
     }
-    function categoryIconId(name){return (state?.categoryIcons?.[name])||DEFAULT_CATEGORY_ICONS[name]||'sparkles'}
+    function categoryIconId(name){const saved=state?.categoryIcons?.[name];return CATEGORY_ICON_CHOICES.includes(saved)?saved:(DEFAULT_CATEGORY_ICONS[name]||'sparkles')}
     function categoryIconMarkup(name,size=18){return livelyIcon(categoryIconId(name),size)}
     function categoryEmoji(name){return emojiFor(categoryIconId(name))||'✨'}
     function mergedCategories(saved=[],habits=[]){
@@ -356,6 +356,7 @@
       const prevPct=Math.round(Math.min(1,getAmount(selectedDate,id)/h.goal)*100),wasPerfect=dayStats(selectedDate).done===state.habits.length&&state.habits.length>0;
       if(!state.logs[key])state.logs[key]={};state.logs[key][id]=clamp(val,0,h.goal);
       save();render();
+      $('#global-ring').classList.remove('stat-refreshed');void $('#global-ring').offsetWidth;$('#global-ring').classList.add('stat-refreshed');
       const nowComplete=completed(selectedDate,h),nextPct=Math.round(Math.min(1,getAmount(selectedDate,id)/h.goal)*100);
       animateHabitProgress(id,prevPct,nextPct);
       if(!wasComplete && nowComplete){
@@ -394,7 +395,10 @@
     function renderCategoryIconChoices(){
       const host=$('#category-icon-picker');
       if(!host)return;
-      host.innerHTML=CATEGORY_ICON_CHOICES.map(id=>`<button type="button" class="category-icon-choice ${chosenCategoryIcon===id?'active':''}" data-category-icon="${id}" aria-label="${id} icon" aria-pressed="${chosenCategoryIcon===id}">${livelyIcon(id,18)}</button>`).join('');
+      const query=($('#category-icon-search')?.value||'').trim().toLocaleLowerCase();
+      const matches=iconCatalog.filter(item=>!query||item.label.toLocaleLowerCase().includes(query)||item.group.toLocaleLowerCase().includes(query)||item.emoji.includes(query));
+      host.innerHTML=matches.length?matches.map(item=>`<button type="button" class="category-icon-choice ${chosenCategoryIcon===item.id?'active':''}" data-category-icon="${escapeHTML(item.id)}" title="${escapeHTML(item.label)}" aria-label="${escapeHTML(item.label)} icon" aria-pressed="${chosenCategoryIcon===item.id}">${livelyIcon(item.id,22)}</button>`).join(''):'<div class="category-icon-empty">No matching icons</div>';
+      $('#category-icon-count').textContent=`${matches.length} icons`;
     }
     function removeCategory(name){
       if(!state.categories.includes(name)||DEFAULT_CATEGORIES.includes(name))return;
@@ -414,7 +418,7 @@
       $('#category-popover').classList.toggle('hidden',!open);
       $('#habit-category-trigger').classList.toggle('open',open);
       $('#habit-category-trigger').setAttribute('aria-expanded',String(open));
-      if(!open){$('#category-feedback').textContent='';$('#new-category-input').value='';chosenCategoryIcon='sparkles';renderCategoryIconChoices();}
+      if(!open){$('#category-feedback').textContent='';$('#new-category-input').value='';$('#category-icon-search').value='';chosenCategoryIcon='sparkles';renderCategoryIconChoices();}
     }
     function addCategory(){
       const input=$('#new-category-input'),raw=input.value.trim(),name=cleanCategoryName(raw);
@@ -484,6 +488,7 @@
     });
     $('#category-add').addEventListener('click',addCategory);
     $('#category-icon-picker').addEventListener('click',e=>{const b=e.target.closest('[data-category-icon]');if(!b)return;chosenCategoryIcon=b.dataset.categoryIcon;renderCategoryIconChoices();});
+    $('#category-icon-search').addEventListener('input',renderCategoryIconChoices);
     $('#new-category-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCategory()}});
     document.addEventListener('pointerdown',e=>{if(!$('#category-select-wrap').contains(e.target))setCategoryMenu(false)});
     $('#icon-picker').addEventListener('click',e=>{const b=e.target.closest('[data-icon-choice]');if(b){chosenIcon=b.dataset.iconChoice;renderPickers()}});
@@ -549,6 +554,22 @@
       const id=b.dataset.nav;document.querySelectorAll('[data-nav]').forEach(el=>el.classList.toggle('active',el===b));
       closeMobile();document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});
     }));
-    syncAwards(false);setTheme(state.theme);render();
+    // First paint: one gentle progress sweep. No ambient animations or repeated scroll effects.
+    function animateFirstPaint(){
+      if(reduceMotion())return;
+      const rings=[...document.querySelectorAll('#habit-list .habit-ring')].map(el=>[el,el.style.getPropertyValue('--ring-progress')]);
+      const meters=[...document.querySelectorAll('#habit-list .small-fill')].map(el=>[el,el.style.getPropertyValue('--pct')]);
+      const columns=[...document.querySelectorAll('#week-chart .week-bar')].map(el=>[el,el.style.getPropertyValue('--bar')]);
+      for(const [el] of rings)el.style.setProperty('--ring-progress','0%');
+      for(const [el] of meters)el.style.setProperty('--pct','0%');
+      for(const [el] of columns)el.style.setProperty('--bar','0%');
+      void document.body.offsetWidth;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        for(const [el,pct] of rings)if(el.isConnected)el.style.setProperty('--ring-progress',pct);
+        for(const [el,pct] of meters)if(el.isConnected)el.style.setProperty('--pct',pct);
+        for(const [el,pct] of columns)if(el.isConnected)el.style.setProperty('--bar',pct);
+      }));
+    }
+    syncAwards(false);setTheme(state.theme);render();animateFirstPaint();
     })();
   
