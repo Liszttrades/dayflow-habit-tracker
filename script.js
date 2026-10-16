@@ -159,20 +159,38 @@
       const optionText=select.options[select.selectedIndex]?.textContent||'';
       if(valueEl) valueEl.textContent=optionText;
       if(trigger) trigger.setAttribute('aria-expanded', String(trigger.parentElement?.classList.contains('open')));
-      menu?.querySelectorAll('[data-option-value]').forEach(btn=>btn.classList.toggle('active',btn.dataset.optionValue===select.value));
+      menu?.querySelectorAll('[data-option-value]').forEach(btn=>{
+        const selected=btn.dataset.optionValue===select.value;
+        btn.classList.toggle('active',selected);
+        btn.setAttribute('aria-selected',String(selected));
+      });
     }
     function closeCustomSelects(){
       document.querySelectorAll('.custom-select.open').forEach(el=>{
-        el.classList.remove('open');
+        el.classList.remove('open','open-up');
         el.querySelector('.custom-select-menu')?.classList.add('hidden');
         const trigger=el.querySelector('.custom-select-trigger'); if(trigger) trigger.setAttribute('aria-expanded','false');
       });
     }
     function toggleCustomSelect(selectId){
       const wrap=document.querySelector(`[data-select-trigger="${selectId}"]`)?.closest('.custom-select');
-      if(!wrap) return; const isOpen=wrap.classList.contains('open');
+      if(!wrap)return;
+      const wasOpen=wrap.classList.contains('open');
       closeCustomSelects();
-      if(!isOpen){wrap.classList.add('open'); wrap.querySelector('.custom-select-menu')?.classList.remove('hidden'); wrap.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded','true'); updateCustomSelect(selectId);} 
+      if(wasOpen)return;
+      const menu=wrap.querySelector('.custom-select-menu');
+      const trigger=wrap.querySelector('.custom-select-trigger');
+      if(!menu||!trigger)return;
+      wrap.classList.add('open');menu.classList.remove('hidden');
+      trigger.setAttribute('aria-expanded','true');
+      updateCustomSelect(selectId);
+      const rect=trigger.getBoundingClientRect();
+      // Keep the options visible inside the scrolling habit dialog, especially on phones.
+      const dialog=trigger.closest('.modal');
+      const dialogRect=dialog?.getBoundingClientRect();
+      const spaceBelow=Math.min(window.innerHeight,dialogRect?.bottom||window.innerHeight)-rect.bottom;
+      const spaceAbove=rect.top-Math.max(0,dialogRect?.top||0);
+      wrap.classList.toggle('open-up',spaceBelow<210&&spaceAbove>spaceBelow);
     }
     const initialDemo=()=>{
       const now=today(),logs={};
@@ -324,13 +342,45 @@
       $('#habit-day-label').textContent=`${isToday?'Today':formatShort(selectedDate)} · Only scheduled habits count toward the daily total.`;
       $('#demo-strip').classList.toggle('hidden',!state.demo);
     }
+    // Animate only changed values. No continuous idle counters and no motion for reduced-motion users.
+    const metricPrevious=new WeakMap(),metricAnimations=new WeakMap();
+    const easeMetric=t=>1-Math.pow(1-t,3);
+    const numberLabel=n=>Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
+    function countTo(el,target,{from,prefix='',suffix='',format=numberLabel,duration=650}={}){
+      if(!el)return;
+      const newValue=Number(target)||0;
+      const animation=metricAnimations.get(el);
+      const old=Number.isFinite(from)?from:metricPrevious.get(el);
+      // A second render in the same update must not cancel an in-flight count-up.
+      if(animation && old===newValue)return;
+      if(animation)cancelAnimationFrame(animation);
+      metricAnimations.delete(el);
+      metricPrevious.set(el,newValue);
+      const draw=n=>el.textContent=prefix+format(n)+suffix;
+      if(!Number.isFinite(old)||old===newValue||reduceMotion()){draw(newValue);return;}
+      const started=performance.now(),time=Math.min(920,Math.max(380,duration));
+      draw(old);
+      const tick=now=>{
+        if(!el.isConnected)return;
+        const t=Math.min(1,(now-started)/time);
+        const value=old+(newValue-old)*easeMetric(t);
+        draw(t===1?newValue:value);
+        if(t<1)metricAnimations.set(el,requestAnimationFrame(tick));
+        else metricAnimations.delete(el);
+      };
+      metricAnimations.set(el,requestAnimationFrame(tick));
+    }
+    let renderedHabitsDate=null;
+    const habitReadouts=new Map();
+    const focusReadouts=new Map();
     function renderStats(){
       const s=dayStats(selectedDate),week=weekStats(selectedDate),streak=currentStreak();
-      $('#completion-count').innerHTML=`${s.done} <span style="font-size:17px;letter-spacing:-.4px;color:var(--ink-light);font-weight:600">/ ${s.total}</span>`;
+      countTo($('#completion-done-count'),s.done,{format:n=>Math.round(n)});
+      countTo($('#completion-total-count'),s.total,{format:n=>Math.round(n)});
       $('#completion-desc').textContent=`Habits finished / scheduled ${dayDiff(selectedDate,today())===0?'today':'on this day'}`;
-      $('#global-percent').textContent=s.percent+'%';$('#global-ring').style.setProperty('--pct',s.percent);
+      countTo($('#global-percent'),s.percent,{suffix:'%',format:n=>Math.round(n)});$('#global-ring').style.setProperty('--pct',s.percent);
       $('.completion-stat').classList.toggle('day-all-complete',s.perfect);
-      $('#streak-value').textContent=streak;
+      countTo($('#streak-value'),streak,{format:n=>Math.round(n)});
       $('#streak-note').textContent=streak>0?`${streak} consecutive active ${streak===1?'day':'days'}`:'Finish one habit to start';
       const tier=tierFor(streak),next=MILESTONES.find(t=>streak<t.days);
       $('#streak-stat').dataset.stage=String(tier?.days||0);
@@ -340,7 +390,7 @@
       $('#streak-stat-flame').style.opacity=streak?1:.35;
       $('#streak-tier-name').textContent=tier?`${tier.name} ${tier.days}d`:'No badge yet';
       $('#streak-next').textContent=next?`${Math.max(0,next.days-streak)} more consecutive ${next.days-streak===1?'day':'days'} to your ${next.name} badge`:'The highest flame is yours! Keep going.';
-      $('#weekly-stat').textContent=week.avg;$('#weekly-orb').style.setProperty('--pct',week.avg);$('#weekly-progress-track').style.width=week.avg+'%';
+      countTo($('#weekly-stat'),week.avg,{format:n=>Math.round(n)});$('#weekly-orb').style.setProperty('--pct',week.avg);$('#weekly-progress-track').style.width=week.avg+'%';
       $('#weekly-progress-track').parentElement.classList.toggle('week-perfect',week.avg===100);
       $('#weekly-note').textContent=`${week.active} active ${week.active===1?'day':'days'} this week`;
     }
@@ -351,11 +401,13 @@
       const color=/^#[0-9a-f]{6}$/i.test(h.color)?h.color:colorChoices[0];
       return `<article class="habit-item ${isComplete?'is-complete':''}" style="--habit-color:${color};--habit-soft:${soft(color)};--pct:${percent};" data-habit-id="${escapeHTML(h.id)}">
         <div class="habit-ring" style="--ring-progress:${percent}%" aria-label="${percent}% completed"><div class="habit-ring-center"><span class="habit-icon">${livelyIcon(h.icon,25)}</span></div></div>
-        <div class="habit-info"><div class="habit-name">${escapeHTML(h.name)}</div><div class="habit-meta"><span>${currentAmount.toLocaleString('en-US')} / ${h.goal.toLocaleString('en-US')} ${escapeHTML(unit)}</span><i class="meta-point"></i><span>${escapeHTML(h.category)}${optional?` <span class="optional-tag">Flexible weekly</span>`:''}</span></div><div class="habit-meter"><div class="small-track"><div class="small-fill" style="--pct:${percent}%"></div></div><span>${percent}%${optional?` · ${weekSessions(selectedDate,h)}/${validSchedule(h.schedule).weeklyTarget}wk`:''}</span></div></div>
+        <div class="habit-info"><div class="habit-name">${escapeHTML(h.name)}</div><div class="habit-meta"><span><span class="habit-current-number" data-amount-number>${currentAmount.toLocaleString('en-US')}</span> / ${h.goal.toLocaleString('en-US')} ${escapeHTML(unit)}</span><i class="meta-point"></i><span>${escapeHTML(h.category)}${optional?` <span class="optional-tag">Flexible weekly</span>`:''}</span></div><div class="habit-meter"><div class="small-track"><div class="small-fill" style="--pct:${percent}%"></div></div><span><span data-percent-number>${percent}</span>%${optional?` · ${weekSessions(selectedDate,h)}/${validSchedule(h.schedule).weeklyTarget}wk`:''}</span></div></div>
         <div class="habit-actions"><div class="stepper"><button type="button" data-habit-action="decrease" aria-label="Decrease ${escapeHTML(h.name)}" ${amount===0?'disabled':''}>${icon('minus',13)}</button><strong>${h.step>=1000?(h.step/1000)+'k':'+'+h.step}</strong><button type="button" data-habit-action="increase" aria-label="Add ${h.step} ${escapeHTML(h.unit)} to ${escapeHTML(h.name)}" ${isComplete?'disabled':''}>${icon('plus',13)}</button></div><button class="done-button ${isComplete?'completed':''}" data-habit-action="toggle" aria-label="${isComplete?'Reset':'Complete'} ${escapeHTML(h.name)}">${icon('check',14)}<span>${isComplete?'Done':'Finish'}</span></button><button type="button" class="edit-button" data-habit-action="edit" aria-label="Edit ${escapeHTML(h.name)}" ${readOnly?'disabled':''}>${icon('settings',15)}</button></div>
       </article>`;
     }
     function renderHabits(){
+      const currentDate=dateKey(selectedDate);
+      if(renderedHabitsDate!==currentDate){habitReadouts.clear();renderedHabitsDate=currentDate;}
       const available=mergedCategories(state.categories,state.habits);
       if(filter!=='All'&&!available.includes(filter))filter='All';
       $('#habit-filters').innerHTML=['All',...available].map(c=>`<button type="button" class="filter ${filter===c?'active':''}" data-filter="${escapeHTML(c)}" aria-pressed="${filter===c}">${c==='All'?'All habits':escapeHTML(c)}</button>`).join('');
@@ -363,6 +415,16 @@
       const matches=scheduled.filter(h=>(filter==='All'||h.category===filter)&&h.name.toLowerCase().includes(search.toLowerCase()));
       $('#habits-count').textContent=`${trackedHabits(selectedDate).length} scheduled · ${scheduled.filter(h=>validSchedule(h.schedule).type==='weekly').length} flexible`;
       $('#habit-list').innerHTML=matches.length?matches.map(habitMarkup).join(''):`<div class="empty"><div class="empty-icon">${icon('calendar',24)}</div><h3>Nothing scheduled here</h3><p>${state.habits.length?'Try another day or filter.':'Add your first habit to get started.'}</p></div>`;
+      for(const h of matches){
+        const amount=getAmount(selectedDate,h.id),percent=clamp(Math.round(amount/h.goal*100),0,100);
+        const previous=habitReadouts.get(h.id);
+        const row=[...$('#habit-list').querySelectorAll('[data-habit-id]')].find(el=>el.dataset.habitId===h.id);
+        if(previous){
+          countTo(row?.querySelector('[data-amount-number]'),amount,{from:previous.amount,format:n=>numberLabel(Math.round(n))});
+          countTo(row?.querySelector('[data-percent-number]'),percent,{from:previous.percent,format:n=>Math.round(n)});
+        }
+        habitReadouts.set(h.id,{amount,percent});
+      }
     }
     function renderCalendar(){
       $('#calendar-month').textContent=calendarMonth.toLocaleDateString('en-US',{month:'long',year:'numeric'});
@@ -379,7 +441,7 @@
     function renderWeek(){
       const w=weekStats(selectedDate),[first,last]=[w.days[0],w.days[6]];
       $('#weekly-date-range').textContent=`${formatShort(first)} – ${formatShort(last)} · Monday to Sunday`;
-      $('#weekly-summary-value').textContent=w.avg+'%';
+      countTo($('#weekly-summary-value'),w.avg,{suffix:'%',format:n=>Math.round(n)});
       $('#week-completed-note').textContent=`${w.active} of ${w.days.filter(d=>dayDiff(d,today())<=0).length} days active`;
       const labels=['M','T','W','T','F','S','S'];
       $('#week-chart').innerHTML=w.days.map((d,i)=>{const pct=dayStats(d).percent,isToday=dayDiff(d,today())===0,future=dayDiff(d,today())>0;return `<div class="week-col ${isToday?'today':''} ${future?'future':''} ${pct===100?'all-done':''}" title="${escapeHTML(formatDay(d))} — ${pct}%"><div class="week-bar-box"><div class="week-bar" style="--bar:${pct}%"></div></div><label>${labels[i]}</label></div>`}).join('');
@@ -530,7 +592,7 @@
     function closeModal(selector){$(selector).classList.add('hidden');if(selector==='#habit-modal-backdrop')setCategoryMenu(false);editingId=null}
     function makeId(){return 'h'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
     function startFresh(){if(!confirm('Clear the example progress and start from zero? Your habit list will stay the same.'))return;state.logs={};state.demo=false;state.awards=[];save();render();toast('Fresh start! Your dashboard is all yours.');}
-    function showSettings(){closeMobile();$('#settings-dark-toggle').checked=state.theme==='dark';renderArchived();$('#settings-modal-backdrop').classList.remove('hidden')}
+    function showSettings(){closeMobile();$('#settings-dark-toggle').checked=state.theme==='dark';$('#settings-modal-backdrop').classList.remove('hidden')}
     function showArchiveInbox(){closeMobile();renderArchived();$('#archive-modal-backdrop').classList.remove('hidden')}
     function readScheduleEditor(){
       const type=$('#habit-repeat-type').value;
@@ -559,7 +621,7 @@
       const prev=Array.from({length:7},(_,i)=>dateOffset(now,i-13)),curr=Array.from({length:7},(_,i)=>dateOffset(now,i-6));
       const avg=dates=>{const due=dates.filter(d=>dayStats(d).total>0);return due.length?Math.round(due.reduce((s,d)=>s+dayStats(d).percent,0)/due.length):0};
       const previous=avg(prev),current=avg(curr),delta=current-previous;
-      $('#trend-week').textContent=`${delta>0?'+':''}${delta} pts`;
+      countTo($('#trend-week'),delta,{prefix:delta>0?'+':'',suffix:' pts',format:n=>Math.round(n)});
       $('#trend-week').className=`trend-delta ${delta>=0?'positive':'negative'}`;
       $('#trend-description').textContent=`${current}% in the last 7 days vs ${previous}% in the previous 7 days`;
       const start=dateOffset(now,-13),recent=Array.from({length:14},(_,i)=>dateOffset(start,i));
@@ -567,14 +629,19 @@
         const dates=recent.filter(d=>habitSet(d).some(x=>x.id===h.id&&dueHabit(d,x)));
         return {...h,score:dates.length?Math.round(100*dates.filter(d=>habitSet(d).some(x=>x.id===h.id&&completed(d,x))).length/dates.length):null,days:dates.length};
       }).filter(h=>h.days>0).sort((a,b)=>a.score-b.score).slice(0,3);
-      $('#habit-insight-list').innerHTML=scores.length?scores.map(h=>`<div class="insight-row"><span>${livelyIcon(h.icon,20)} ${escapeHTML(h.name)}</span><strong>${h.score}%</strong></div>`).join(''):'<p class="subhead">Start tracking to see a habit breakdown.</p>';
+      $('#habit-insight-list').innerHTML=scores.length?scores.map(h=>`<div class="insight-row" data-focus-id="${escapeHTML(h.id)}"><span>${livelyIcon(h.icon,20)} ${escapeHTML(h.name)}</span><strong data-focus-score>${h.score}%</strong></div>`).join(''):'<p class="subhead">Start tracking to see a habit breakdown.</p>';
+      for(const h of scores){
+        const row=[...$('#habit-insight-list').querySelectorAll('[data-focus-id]')].find(el=>el.dataset.focusId===h.id);
+        const from=focusReadouts.get(h.id);
+        if(from!==undefined)countTo(row?.querySelector('[data-focus-score]'),h.score,{from,suffix:'%',format:n=>Math.round(n)});
+        focusReadouts.set(h.id,h.score);
+      }
       const weekly=state.habits.filter(h=>!h.archivedAt&&validSchedule(h.schedule).type==='weekly');
       $('#weekly-goals-list').innerHTML=weekly.length?weekly.map(h=>`<div class="insight-row"><span>${livelyIcon(h.icon,20)} ${escapeHTML(h.name)}</span><strong>${weekSessions(now,h)}/${validSchedule(h.schedule).weeklyTarget}</strong></div>`).join(''):'<p class="subhead">Create a weekly-goal habit to see its progress.</p>';
     }
     function renderArchived(){
       const archived=state.habits.filter(h=>h.archivedAt).sort((a,b)=>String(b.archivedAt||'').localeCompare(String(a.archivedAt||'')));
       const markup=archived.length?archived.map(h=>`<div class="archive-item"><div class="archive-item-main"><div class="archive-item-top">${livelyIcon(h.icon,22)} <span>${escapeHTML(h.name)}</span></div><div class="archive-item-note">${escapeHTML(h.category)} · Archived ${escapeHTML(h.archivedAt||dateKey(today()))} · ${h.goal.toLocaleString('en-US')} ${escapeHTML(plural(normalizeUnitInput(h.unit),h.goal))}</div></div><button type="button" data-restore-habit="${escapeHTML(h.id)}" class="secondary-btn">Restore</button></div>`).join(''):'<p class="subhead">No archived habits yet.</p>';
-      $('#archived-list').innerHTML=markup;
       if($('#archive-inbox-list')) $('#archive-inbox-list').innerHTML=markup;
       if($('#archive-count')) $('#archive-count').textContent=`${archived.length} archived ${archived.length===1?'habit':'habits'}`;
     }
@@ -598,7 +665,7 @@
     $('#next-day').addEventListener('click',()=>changeDate(dateOffset(selectedDate,1)));
     $('#today-button').addEventListener('click',()=>changeDate(today()));
     ['#sidebar-add','#header-add','#list-add'].forEach(s=>$(s).addEventListener('click',()=>{closeMobile();openHabit()}));
-    $('#archive-open').addEventListener('click',e=>{e.preventDefault();showArchiveInbox()});
+    $('#archive-open')?.addEventListener('click',e=>{e.preventDefault();showArchiveInbox()});
     $('#habit-modal-close').addEventListener('click',()=>closeModal('#habit-modal-backdrop'));
     $('#cancel-habit').addEventListener('click',()=>closeModal('#habit-modal-backdrop'));
     $('#habit-category-trigger').addEventListener('click',()=>{const isOpen=$('#habit-category-trigger').getAttribute('aria-expanded')==='true';setCategoryMenu(!isOpen);if(!isOpen)$('#category-options .selected')?.focus({preventScroll:true})});
@@ -623,11 +690,28 @@
     $('#color-picker').addEventListener('click',e=>{const b=e.target.closest('[data-color-choice]');if(b){chosenColor=b.dataset.colorChoice;renderPickers()}});
     $('#habit-repeat-type').addEventListener('change',()=>{updateCustomSelect('habit-repeat-type');renderScheduleEditor(readScheduleEditor())});
     $('#habit-weekly-target').addEventListener('change',()=>updateCustomSelect('habit-weekly-target'));
-    document.querySelectorAll('[data-select-trigger]').forEach(trigger=>trigger.addEventListener('click',e=>{e.preventDefault();toggleCustomSelect(trigger.dataset.selectTrigger)}));
+    document.querySelectorAll('[data-select-trigger]').forEach(trigger=>{
+      trigger.addEventListener('click',e=>{e.preventDefault();toggleCustomSelect(trigger.dataset.selectTrigger)});
+      trigger.addEventListener('keydown',e=>{
+        if(!['ArrowDown','ArrowUp','Enter',' '].includes(e.key))return;
+        e.preventDefault();
+        if(!trigger.closest('.custom-select').classList.contains('open'))toggleCustomSelect(trigger.dataset.selectTrigger);
+        const options=[...trigger.closest('.custom-select').querySelectorAll('[data-option-for]')];
+        (options.find(o=>o.classList.contains('active'))||options[0])?.focus();
+      });
+    });
+    document.querySelectorAll('[data-option-for]').forEach(option=>option.addEventListener('keydown',e=>{
+      const options=[...option.closest('.custom-select-menu').querySelectorAll('[data-option-for]')];
+      let ix=options.indexOf(option);
+      if(e.key==='ArrowDown'||e.key==='ArrowUp'||e.key==='Home'||e.key==='End'){
+        e.preventDefault();ix=e.key==='Home'?0:e.key==='End'?options.length-1:(ix+(e.key==='ArrowDown'?1:-1)+options.length)%options.length;options[ix]?.focus();
+      }
+      if(e.key==='Escape'){e.preventDefault();const trigger=option.closest('.custom-select').querySelector('.custom-select-trigger');closeCustomSelects();trigger?.focus()}
+    }));
     document.querySelectorAll('[data-option-for]').forEach(option=>option.addEventListener('click',e=>{const selectId=option.dataset.optionFor;const select=$('#'+selectId);if(!select)return;select.value=option.dataset.optionValue;select.dispatchEvent(new Event('change',{bubbles:true}));closeCustomSelects();}));
     $('#habit-unit-input').addEventListener('blur',e=>{e.target.value=normalizeUnitInput(e.target.value)});
     $('#consistency-grid').addEventListener('click',e=>{const b=e.target.closest('[data-consistency-date]');if(b)changeDate(dateFromKey(b.dataset.consistencyDate))});
-    ['#archived-list','#archive-inbox-list'].forEach(sel=>$(sel)?.addEventListener('click',e=>{const b=e.target.closest('[data-restore-habit]');if(!b)return;const h=state.habits.find(h=>h.id===b.dataset.restoreHabit);if(!h)return;snapshotPast();h.archivedAt=null;h.createdAt=dateKey(today());save();renderArchived();render();toast(`${h.name} restored.`)}));
+    $('#archive-inbox-list').addEventListener('click',e=>{const b=e.target.closest('[data-restore-habit]');if(!b)return;const h=state.habits.find(h=>h.id===b.dataset.restoreHabit);if(!h)return;snapshotPast();h.archivedAt=null;h.createdAt=dateKey(today());save();renderArchived();render();toast(`${h.name} restored.`)});
     $('#habit-form').addEventListener('submit',e=>{
       e.preventDefault();const name=$('#habit-name-input').value.trim(),unit=normalizeUnitInput($('#habit-unit-input').value),goal=Number($('#habit-goal-input').value),step=Number($('#habit-step-input').value);
       if(!name||!unit||!Number.isInteger(goal)||goal<1||goal>100000||!Number.isInteger(step)||step<1||step>100000){toast('Enter valid habit details and targets.');return}
@@ -646,9 +730,9 @@
     });
     $('#settings-open').addEventListener('click',showSettings);
     $('#settings-modal-close').addEventListener('click',()=>closeModal('#settings-modal-backdrop'));
-    $('#archive-modal-close').addEventListener('click',()=>closeModal('#archive-modal-backdrop'));
-    $('#archive-done').addEventListener('click',()=>closeModal('#archive-modal-backdrop'));
-    $('#archive-go-settings').addEventListener('click',()=>{closeModal('#archive-modal-backdrop');showSettings()});
+    $('#archive-modal-close')?.addEventListener('click',()=>closeModal('#archive-modal-backdrop'));
+    $('#archive-done')?.addEventListener('click',()=>closeModal('#archive-modal-backdrop'));
+    $('#archive-go-settings')?.addEventListener('click',()=>{closeModal('#archive-modal-backdrop');showSettings()});
     $('#theme-toggle').addEventListener('click',()=>setTheme(state.theme==='dark'?'light':'dark'));
     $('#settings-dark-toggle').addEventListener('change',e=>setTheme(e.target.checked?'dark':'light'));
     $('#start-fresh').addEventListener('click',startFresh);
@@ -707,6 +791,8 @@
         for(const [el,pct] of columns)if(el.isConnected)el.style.setProperty('--bar',pct);
       }));
     }
-    syncAwards(false);setTheme(state.theme);render();animateFirstPaint();
+    syncAwards(false);setTheme(state.theme);render();
+    document.body.dataset.dayflowReady='true';
+    animateFirstPaint();
     })();
   

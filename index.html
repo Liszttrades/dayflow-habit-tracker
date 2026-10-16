@@ -14,10 +14,10 @@
   <meta property="og:image" content="https://liszttrades.github.io/dayflow-habit-tracker/og-dayflow.png" />
   <meta property="og:url" content="https://liszttrades.github.io/dayflow-habit-tracker/" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="stylesheet" href="./style.css?v=8">
+  <link rel="stylesheet" href="./style.css?v=20261016r3">
 </head>
 <body>
-  <div class="app">
+  <div class="app" id="dayflow-app">
     <div class="mobile-scrim" id="mobile-scrim"></div>
     <aside class="sidebar" id="sidebar" aria-label="Main navigation">
       <a class="brand" href="#overview" aria-label="Dayflow home">
@@ -67,7 +67,7 @@
         <div class="demo-strip" id="demo-strip"><span data-icon="sparkles"></span><span><b>Preview data:</b> Explore the dashboard with example progress.</span><button id="start-fresh">Start fresh</button></div>
         <section class="stats" aria-label="Your habit statistics">
           <div class="stat-card completion-stat">
-            <div class="stat-main"><div class="stat-label"><span data-icon="target"></span> Scheduled completion</div><div class="stat-value" id="completion-count">0 <span style="font-size:17px;letter-spacing:-.4px;color:var(--ink-light);font-weight:600">/ 10</span></div><p class="stat-description" id="completion-desc">Habits completed today</p></div>
+            <div class="stat-main"><div class="stat-label"><span data-icon="target"></span> Scheduled completion</div><div class="stat-value" id="completion-count"><span id="completion-done-count" class="metric-number">0</span> <span class="metric-total">/ <span id="completion-total-count">10</span></span></div><p class="stat-description" id="completion-desc">Habits completed today</p></div>
             <div class="global-ring" id="global-ring" style="--pct:0"><div class="global-ring-inner"><strong id="global-percent">0%</strong><span>target progress</span></div></div>
           </div>
           <div class="stat-card streak-stat" id="streak-stat" data-stage="0">
@@ -243,8 +243,6 @@
         <div class="cloud-actions"><button class="secondary-btn" id="cloud-sync-now" disabled>Sync now</button><button class="secondary-btn" id="cloud-signout" disabled>Sign out</button></div>
         <p id="cloud-help" class="cloud-hint">Cloud sync requires your own Supabase project. Until configured, local backup still works.</p>
       </div>
-      <div class="settings-row"><div><strong>Archived habits</strong><p>Hide old habits without losing their historical progress.</p></div></div>
-      <div class="archive-list" id="archived-list"></div>
       <div class="settings-row"><div><strong>Local data</strong><p>Your data stays in this browser. Export a backup to keep it safe or move it to another device.</p></div><span data-icon="shield" style="color:#41ad91"></span></div>
       <div class="settings-row"><div><strong>Start over</strong><p>Remove all saved progress and restore the 10 example habits.</p></div><button class="danger-btn" id="reset-data">Reset</button></div>
       <div class="settings-buttons"><button class="secondary-btn" id="export-data"><span data-icon="download"></span> Export backup</button><button class="secondary-btn" id="import-button"><span data-icon="upload"></span> Import backup</button><input class="hidden" id="import-input" type="file" accept="application/json,.json"></div>
@@ -271,8 +269,16 @@
   </div>
   <div id="effect-layer" class="effect-layer" aria-hidden="true"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./config.js?v=2" defer></script>
-  <script src="./script.js?v=8" defer></script>
-  <script src="./cloud.js?v=2" defer></script>
+  <div id="dayflow-loading-error" class="hidden" role="alert" style="position:fixed;bottom:20px;left:20px;right:20px;max-width:580px;margin:auto;z-index:10000;background:#2c2541;color:white;border:1px solid #aa9aff;padding:15px 18px;border-radius:14px;box-shadow:0 12px 38px #0006;font:600 14px/1.5 system-ui">
+    Dayflow didn't finish loading. Please upload all files from the same ZIP and refresh the page (Ctrl+Shift+R). Your browser data has not been reset.
+  </div>
+  <script>
+    window.setTimeout(function(){
+      if(document.body.dataset.dayflowReady!=='true') document.getElementById('dayflow-loading-error')?.classList.remove('hidden');
+    },5500);
+  </script>
+  <script src="./config.js?v=20261016r2" defer></script>
+  <script src="./script.js?v=20261016r3" defer></script>
+  <script src="./cloud.js?v=20261016r2" defer></script>
 </body>
 </html>
