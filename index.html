@@ -103,7 +103,7 @@
           <section class="panel habits-panel" id="habits">
             <div class="section-heading">
               <div><div class="heading-title"><h2>Your scheduled habits</h2><span class="heading-count" id="habits-count">10 habits</span></div><p class="subhead" id="habit-day-label">A little progress every day adds up.</p></div>
-              <button class="quiet-button" id="list-add"><span data-icon="plus"></span> Add</button>
+              <div class="section-actions"><button class="quiet-button ghost-button" id="archive-open"><span data-icon="checklist"></span> Archive inbox</button><button class="quiet-button" id="list-add"><span data-icon="plus"></span> Add</button></div>
             </div>
             <div class="filter-row">
               <div class="filters" id="habit-filters" role="group" aria-label="Filter habits by category"></div>
@@ -187,11 +187,17 @@
           <div class="field"><label for="habit-step-input">Add per tap</label><input id="habit-step-input" type="number" value="1" min="1" max="100000" required></div>
         </div>
         <div class="field schedule-field"><label for="habit-repeat-type">Repeat schedule</label>
-          <select id="habit-repeat-type" aria-label="Repeat schedule">
+          <select id="habit-repeat-type" class="schedule-native" aria-label="Repeat schedule">
             <option value="daily">Every day</option>
             <option value="days">Selected weekdays</option>
             <option value="weekly">Flexible weekly goal</option>
           </select>
+          <div class="schedule-choice-row" id="schedule-choice-row" role="group" aria-label="Repeat schedule choices">
+            <button type="button" class="schedule-choice" data-repeat-choice="daily">Every day</button>
+            <button type="button" class="schedule-choice" data-repeat-choice="days">Selected weekdays</button>
+            <button type="button" class="schedule-choice" data-repeat-choice="weekly">Flexible weekly goal</button>
+          </div>
+          <p class="schedule-caption" id="schedule-caption">Track this habit every day.</p>
           <div id="repeat-weekdays" class="repeat-weekdays hidden" role="group" aria-label="Selected weekdays">
             <label><input type="checkbox" value="0"><span>M</span></label><label><input type="checkbox" value="1"><span>T</span></label>
             <label><input type="checkbox" value="2"><span>W</span></label><label><input type="checkbox" value="3"><span>T</span></label>
@@ -212,6 +218,14 @@
         <div class="field"><label>Choose a color</label><div class="color-picker" id="color-picker"></div></div>
         <div class="modal-actions"><button type="button" class="danger-btn hidden" id="delete-habit">Delete habit</button><div class="action-group"><button type="button" class="secondary-btn" id="cancel-habit">Cancel</button><button type="submit" class="primary-btn"><span data-icon="check"></span> <span id="save-habit-label">Create habit</span></button></div></div>
       </form>
+    </div>
+  </div>
+  <div class="modal-backdrop hidden" id="archive-modal-backdrop" role="presentation">
+    <div class="modal archive-modal" role="dialog" aria-modal="true" aria-labelledby="archive-modal-title">
+      <div class="modal-header"><div><h2 id="archive-modal-title">Archive inbox</h2><p>Review habits you archived and bring them back anytime.</p></div><button class="icon-button" id="archive-modal-close" aria-label="Close archive inbox"><span data-icon="x"></span></button></div>
+      <div class="archive-meta"><strong id="archive-count">0 archived habits</strong><span class="archive-meta-note">Restoring a habit adds it back to upcoming days without touching older records.</span></div>
+      <div class="archive-list archive-inbox-list" id="archive-inbox-list"></div>
+      <div class="modal-actions archive-actions"><button type="button" class="secondary-btn" id="archive-go-settings">Open settings</button><button type="button" class="primary-btn" id="archive-done">Done</button></div>
     </div>
   </div>
   <div class="modal-backdrop hidden" id="settings-modal-backdrop" role="presentation">
