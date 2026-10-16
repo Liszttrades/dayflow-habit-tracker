@@ -48,7 +48,6 @@
       <header class="topbar">
         <div style="display:flex;align-items:center;gap:12px">
           <button class="small-icon-btn mobile-menu" id="menu-toggle" aria-label="Open menu"><span data-icon="menu"></span></button>
-          <div class="crumbs"><span>Workspace</span><span class="slash">/</span><strong>Overview</strong></div>
         </div>
         <div class="top-actions">
           <span class="top-date"><span data-icon="calendar"></span> <span id="top-date-label">Today</span></span>
@@ -89,11 +88,10 @@
             </div>
             <div class="stat-visual weekly-orb" id="weekly-orb" style="--pct:0" aria-hidden="true"><div class="weekly-orb-inner">
               <svg class="weekly-orb-art" width="62" height="62" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs><linearGradient id="weekSparkGradient" x1="8" y1="58" x2="59" y2="9"><stop stop-color="#54d5ca"/><stop offset="1" stop-color="#a98cff"/></linearGradient></defs>
-                <rect x="15" y="40" width="10" height="20" rx="5" fill="#a18cf9" opacity=".47"/>
-                <rect x="31" y="30" width="10" height="30" rx="5" fill="#a18cf9" opacity=".7"/>
+                <defs><linearGradient id="weekSparkGradient" x1="12" y1="56" x2="58" y2="12"><stop stop-color="#54d5ca"/><stop offset="1" stop-color="#a98cff"/></linearGradient></defs>
+                <rect x="15" y="40" width="10" height="20" rx="5" fill="#8f80e8" opacity=".72"/>
+                <rect x="31" y="30" width="10" height="30" rx="5" fill="#9f8df1" opacity=".85"/>
                 <rect x="47" y="17" width="10" height="43" rx="5" fill="url(#weekSparkGradient)"/>
-                <path d="M13 34 30 23 41 28 52 18" stroke="url(#weekSparkGradient)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
                 <circle cx="13" cy="34" r="3.5" fill="#67daca"/>
               </svg><span class="weekly-orb-spark">✦</span>
             </div></div>
@@ -103,7 +101,7 @@
           <section class="panel habits-panel" id="habits">
             <div class="section-heading">
               <div><div class="heading-title"><h2>Your scheduled habits</h2><span class="heading-count" id="habits-count">10 habits</span></div><p class="subhead" id="habit-day-label">A little progress every day adds up.</p></div>
-              <div class="section-actions"><button class="quiet-button ghost-button" id="archive-open"><span data-icon="checklist"></span> Archive inbox</button><button class="quiet-button" id="list-add"><span data-icon="plus"></span> Add</button></div>
+              <div class="section-actions"><button type="button" class="quiet-button ghost-button" id="archive-open"><span data-icon="checklist"></span> Archive inbox</button><button class="quiet-button" id="list-add"><span data-icon="plus"></span> Add</button></div>
             </div>
             <div class="filter-row">
               <div class="filters" id="habit-filters" role="group" aria-label="Filter habits by category"></div>
@@ -187,15 +185,21 @@
           <div class="field"><label for="habit-step-input">Add per tap</label><input id="habit-step-input" type="number" value="1" min="1" max="100000" required></div>
         </div>
         <div class="field schedule-field"><label for="habit-repeat-type">Repeat schedule</label>
-          <select id="habit-repeat-type" class="schedule-native" aria-label="Repeat schedule">
-            <option value="daily">Every day</option>
-            <option value="days">Selected weekdays</option>
-            <option value="weekly">Flexible weekly goal</option>
-          </select>
-          <div class="schedule-choice-row" id="schedule-choice-row" role="group" aria-label="Repeat schedule choices">
-            <button type="button" class="schedule-choice" data-repeat-choice="daily">Every day</button>
-            <button type="button" class="schedule-choice" data-repeat-choice="days">Selected weekdays</button>
-            <button type="button" class="schedule-choice" data-repeat-choice="weekly">Flexible weekly goal</button>
+          <div class="custom-select" id="schedule-select-wrap">
+            <select id="habit-repeat-type" class="native-select-hidden" aria-label="Repeat schedule">
+              <option value="daily">Every day</option>
+              <option value="days">Selected weekdays</option>
+              <option value="weekly">Flexible weekly goal</option>
+            </select>
+            <button type="button" class="custom-select-trigger" data-select-trigger="habit-repeat-type" aria-haspopup="listbox" aria-expanded="false">
+              <span class="custom-select-value" id="habit-repeat-type-value">Every day</span>
+              <span class="custom-select-chevron" aria-hidden="true"><span data-icon="chevron-down"></span></span>
+            </button>
+            <div class="custom-select-menu hidden" id="habit-repeat-type-menu" role="listbox" aria-label="Repeat schedule options">
+              <button type="button" class="custom-select-option" data-option-for="habit-repeat-type" data-option-value="daily">Every day</button>
+              <button type="button" class="custom-select-option" data-option-for="habit-repeat-type" data-option-value="days">Selected weekdays</button>
+              <button type="button" class="custom-select-option" data-option-for="habit-repeat-type" data-option-value="weekly">Flexible weekly goal</button>
+            </div>
           </div>
           <p class="schedule-caption" id="schedule-caption">Track this habit every day.</p>
           <div id="repeat-weekdays" class="repeat-weekdays hidden" role="group" aria-label="Selected weekdays">
@@ -204,7 +208,7 @@
             <label><input type="checkbox" value="4"><span>F</span></label><label><input type="checkbox" value="5"><span>S</span></label>
             <label><input type="checkbox" value="6"><span>S</span></label>
           </div>
-          <div id="weekly-target-row" class="weekly-target-row hidden"><label for="habit-weekly-target">Sessions to complete per week</label><select id="habit-weekly-target"><option value="1">1 time</option><option value="2">2 times</option><option value="3">3 times</option><option value="4">4 times</option><option value="5">5 times</option><option value="6">6 times</option><option value="7">7 times</option></select><p>Log this habit on any days you like. It won't count as a missed daily habit.</p></div>
+          <div id="weekly-target-row" class="weekly-target-row hidden"><label for="habit-weekly-target">Sessions to complete per week</label><div class="custom-select compact" id="weekly-target-select-wrap"><select id="habit-weekly-target" class="native-select-hidden"><option value="1">1 time</option><option value="2">2 times</option><option value="3">3 times</option><option value="4">4 times</option><option value="5">5 times</option><option value="6">6 times</option><option value="7">7 times</option></select><button type="button" class="custom-select-trigger" data-select-trigger="habit-weekly-target" aria-haspopup="listbox" aria-expanded="false"><span class="custom-select-value" id="habit-weekly-target-value">1 time</span><span class="custom-select-chevron" aria-hidden="true"><span data-icon="chevron-down"></span></span></button><div class="custom-select-menu hidden" id="habit-weekly-target-menu" role="listbox" aria-label="Weekly target options"><button type="button" class="custom-select-option" data-option-for="habit-weekly-target" data-option-value="1">1 time</button><button type="button" class="custom-select-option" data-option-for="habit-weekly-target" data-option-value="2">2 times</button><button type="button" class="custom-select-option" data-option-for="habit-weekly-target" data-option-value="3">3 times</button><button type="button" class="custom-select-option" data-option-for="habit-weekly-target" data-option-value="4">4 times</button><button type="button" class="custom-select-option" data-option-for="habit-weekly-target" data-option-value="5">5 times</button><button type="button" class="custom-select-option" data-option-for="habit-weekly-target" data-option-value="6">6 times</button><button type="button" class="custom-select-option" data-option-for="habit-weekly-target" data-option-value="7">7 times</button></div></div><p>Log this habit on any days you like. It won't count as a missed daily habit.</p></div>
         </div>
         <div class="field emoji-field">
           <div class="emoji-field-heading"><label id="icon-picker-label">Choose an icon</label><span class="emoji-note">Colorful, expressive emoji</span></div>

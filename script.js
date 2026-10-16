@@ -151,6 +151,29 @@
     }
     const validNumber=x=>Number.isFinite(Number(x))?Number(x):0;
     const soft=(hex)=>/^#[0-9a-fA-F]{6}$/.test(hex)?hex+'1e':'#8069eb1e';
+    function updateCustomSelect(selectId){
+      const select=$('#'+selectId); if(!select) return;
+      const trigger=document.querySelector(`[data-select-trigger="${selectId}"]`);
+      const valueEl=$('#'+selectId+'-value');
+      const menu=$('#'+selectId+'-menu');
+      const optionText=select.options[select.selectedIndex]?.textContent||'';
+      if(valueEl) valueEl.textContent=optionText;
+      if(trigger) trigger.setAttribute('aria-expanded', String(trigger.parentElement?.classList.contains('open')));
+      menu?.querySelectorAll('[data-option-value]').forEach(btn=>btn.classList.toggle('active',btn.dataset.optionValue===select.value));
+    }
+    function closeCustomSelects(){
+      document.querySelectorAll('.custom-select.open').forEach(el=>{
+        el.classList.remove('open');
+        el.querySelector('.custom-select-menu')?.classList.add('hidden');
+        const trigger=el.querySelector('.custom-select-trigger'); if(trigger) trigger.setAttribute('aria-expanded','false');
+      });
+    }
+    function toggleCustomSelect(selectId){
+      const wrap=document.querySelector(`[data-select-trigger="${selectId}"]`)?.closest('.custom-select');
+      if(!wrap) return; const isOpen=wrap.classList.contains('open');
+      closeCustomSelects();
+      if(!isOpen){wrap.classList.add('open'); wrap.querySelector('.custom-select-menu')?.classList.remove('hidden'); wrap.querySelector('.custom-select-trigger')?.setAttribute('aria-expanded','true'); updateCustomSelect(selectId);} 
+    }
     const initialDemo=()=>{
       const now=today(),logs={};
       const samples=[
@@ -521,7 +544,8 @@
       $('#repeat-weekdays').classList.toggle('hidden',schedule.type!=='days');
       $('#weekly-target-row').classList.toggle('hidden',schedule.type!=='weekly');
       $('#daily-target-label').textContent=schedule.type==='weekly'?'Target per session':'Daily target';
-      document.querySelectorAll('#schedule-choice-row [data-repeat-choice]').forEach(btn=>btn.classList.toggle('active',btn.dataset.repeatChoice===schedule.type));
+      updateCustomSelect('habit-repeat-type');
+      updateCustomSelect('habit-weekly-target');
       const captions={daily:'Track this habit every day.',days:'Only count this habit on the weekdays you choose.',weekly:'Complete this habit any day of the week until you hit your session goal.'};
       $('#schedule-caption').textContent=captions[schedule.type]||captions.daily;
     }
@@ -574,7 +598,7 @@
     $('#next-day').addEventListener('click',()=>changeDate(dateOffset(selectedDate,1)));
     $('#today-button').addEventListener('click',()=>changeDate(today()));
     ['#sidebar-add','#header-add','#list-add'].forEach(s=>$(s).addEventListener('click',()=>{closeMobile();openHabit()}));
-    $('#archive-open').addEventListener('click',showArchiveInbox);
+    $('#archive-open').addEventListener('click',e=>{e.preventDefault();showArchiveInbox()});
     $('#habit-modal-close').addEventListener('click',()=>closeModal('#habit-modal-backdrop'));
     $('#cancel-habit').addEventListener('click',()=>closeModal('#habit-modal-backdrop'));
     $('#habit-category-trigger').addEventListener('click',()=>{const isOpen=$('#habit-category-trigger').getAttribute('aria-expanded')==='true';setCategoryMenu(!isOpen);if(!isOpen)$('#category-options .selected')?.focus({preventScroll:true})});
@@ -591,13 +615,16 @@
     $('#category-icon-picker').addEventListener('click',e=>{const b=e.target.closest('[data-category-icon]');if(!b)return;chosenCategoryIcon=b.dataset.categoryIcon;renderCategoryIconChoices();});
     $('#category-icon-search').addEventListener('input',renderCategoryIconChoices);
     $('#new-category-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addCategory()}});
-    document.addEventListener('pointerdown',e=>{if(!$('#category-select-wrap').contains(e.target))setCategoryMenu(false)});
+    document.addEventListener('pointerdown',e=>{if(!$('#category-select-wrap').contains(e.target))setCategoryMenu(false); if(!e.target.closest('.custom-select')) closeCustomSelects();});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape') closeCustomSelects();});
     $('#icon-picker').addEventListener('click',e=>{const b=e.target.closest('[data-icon-choice]');if(b){chosenIcon=b.dataset.iconChoice;renderPickers()}});
     $('#emoji-filters').addEventListener('click',e=>{const b=e.target.closest('[data-emoji-group]');if(b){iconGroup=b.dataset.emojiGroup;renderPickers()}});
     $('#emoji-search-input').addEventListener('input',e=>{emojiSearch=e.target.value.toLowerCase().trim();renderPickers()});
     $('#color-picker').addEventListener('click',e=>{const b=e.target.closest('[data-color-choice]');if(b){chosenColor=b.dataset.colorChoice;renderPickers()}});
-    $('#habit-repeat-type').addEventListener('change',()=>renderScheduleEditor(readScheduleEditor()));
-    $('#schedule-choice-row').addEventListener('click',e=>{const b=e.target.closest('[data-repeat-choice]');if(!b)return;$('#habit-repeat-type').value=b.dataset.repeatChoice;renderScheduleEditor(readScheduleEditor())});
+    $('#habit-repeat-type').addEventListener('change',()=>{updateCustomSelect('habit-repeat-type');renderScheduleEditor(readScheduleEditor())});
+    $('#habit-weekly-target').addEventListener('change',()=>updateCustomSelect('habit-weekly-target'));
+    document.querySelectorAll('[data-select-trigger]').forEach(trigger=>trigger.addEventListener('click',e=>{e.preventDefault();toggleCustomSelect(trigger.dataset.selectTrigger)}));
+    document.querySelectorAll('[data-option-for]').forEach(option=>option.addEventListener('click',e=>{const selectId=option.dataset.optionFor;const select=$('#'+selectId);if(!select)return;select.value=option.dataset.optionValue;select.dispatchEvent(new Event('change',{bubbles:true}));closeCustomSelects();}));
     $('#habit-unit-input').addEventListener('blur',e=>{e.target.value=normalizeUnitInput(e.target.value)});
     $('#consistency-grid').addEventListener('click',e=>{const b=e.target.closest('[data-consistency-date]');if(b)changeDate(dateFromKey(b.dataset.consistencyDate))});
     ['#archived-list','#archive-inbox-list'].forEach(sel=>$(sel)?.addEventListener('click',e=>{const b=e.target.closest('[data-restore-habit]');if(!b)return;const h=state.habits.find(h=>h.id===b.dataset.restoreHabit);if(!h)return;snapshotPast();h.archivedAt=null;h.createdAt=dateKey(today());save();renderArchived();render();toast(`${h.name} restored.`)}));
@@ -657,7 +684,7 @@
       }catch(err){toast(err.message||'Could not read backup.')}finally{e.target.value=''}
     });
     document.querySelectorAll('.modal-backdrop').forEach(backdrop=>backdrop.addEventListener('click',e=>{if(e.target===backdrop)backdrop.classList.add('hidden')}));
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#habit-category-trigger').getAttribute('aria-expanded')==='true'){setCategoryMenu(false);$('#habit-category-trigger').focus();return;}closeCelebration();$('#habit-modal-backdrop').classList.add('hidden');$('#settings-modal-backdrop').classList.add('hidden');closeMobile()}if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&$('#habit-modal-backdrop').classList.contains('hidden')){e.preventDefault();$('#habit-search').focus()}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#habit-category-trigger').getAttribute('aria-expanded')==='true'){setCategoryMenu(false);$('#habit-category-trigger').focus();return;}closeCustomSelects();closeCelebration();$('#habit-modal-backdrop').classList.add('hidden');$('#settings-modal-backdrop').classList.add('hidden');$('#archive-modal-backdrop').classList.add('hidden');closeMobile()}if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&$('#habit-modal-backdrop').classList.contains('hidden')){e.preventDefault();$('#habit-search').focus()}});
     $('#menu-toggle').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#mobile-scrim').classList.add('show')});
     $('#mobile-scrim').addEventListener('click',closeMobile);
     document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>{
