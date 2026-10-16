@@ -782,3 +782,75 @@ button:active:not(:disabled){transform:scale(.97)}
  .category-popover .category-options{max-height:128px}
  .category-popover .category-icon-picker{max-height:116px}
 }
+
+/* Dayflow 2.0: calm, usable controls and real habit insights. */
+::selection{background:#c4b8ff;color:#23203c}
+body{background:var(--bg)!important;background-image:none!important;font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif}
+:root{--shadow:0 8px 30px rgba(48,43,93,.045)}
+body.dark{--shadow:0 10px 30px rgba(2,3,12,.16)}
+button,select{touch-action:manipulation}
+.panel,.stat-card{transition:border-color .22s ease,box-shadow .22s ease}
+@media(hover:hover){.panel:hover,.stat-card:hover{border-color:color-mix(in srgb,var(--border) 76%,var(--accent) 24%)}}
+.eyebrow,.badge-eyebrow,.insight-overline{letter-spacing:.09em}
+.habit-name{font-size:15px;letter-spacing:-.025em}
+.habit-meta,.subhead,.stat-description,.stat-detail,.weekly-subhead{font-size:12.5px;line-height:1.6}
+.stat-label,.rail-title{font-size:13px}
+.habit-actions .done-button,.stepper button,.edit-button{min-height:40px}
+.habit-actions .done-button{padding:8px 13px;font-size:12px}
+.habit-actions .edit-button{min-width:36px}
+.optional-tag{font-size:10px;font-weight:750;color:var(--accent);background:var(--accent-soft);border-radius:7px;padding:3px 5px;margin-left:5px}
+.schedule-field>label{display:block;margin:0 0 7px}
+.schedule-field select,.weekly-target-row select{width:100%;min-height:44px;padding:9px 13px;border:1px solid var(--border);background:var(--surface);color:var(--ink);border-radius:11px;font-weight:650}
+.schedule-field select:focus-visible,.weekly-target-row select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.repeat-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:11px}
+.repeat-weekdays label{min-width:0;margin:0;position:relative;cursor:pointer}
+.repeat-weekdays input{position:absolute;width:1px;height:1px;opacity:0}
+.repeat-weekdays span{display:grid;place-items:center;border:1px solid var(--border);background:var(--surface-alt);color:var(--ink-muted);height:39px;border-radius:11px;font-weight:750;font-size:12px;transition:background .16s ease,color .16s ease,border-color .16s ease}
+.repeat-weekdays input:checked+span{background:var(--accent);color:white;border-color:var(--accent)}
+.repeat-weekdays input:focus-visible+span{outline:2px solid var(--accent);outline-offset:3px}
+.weekly-target-row{margin-top:11px;padding:11px;background:var(--surface-alt);border-radius:12px}
+.weekly-target-row label{display:block;margin:0 0 7px;font-size:12px}
+.weekly-target-row p{margin:7px 0 0;color:var(--ink-muted);font-size:11px;line-height:1.5}
+.trends-panel{padding:22px 21px}
+.trends-panel .rail-title{margin-bottom:7px}
+.insight-desc{font-size:11px;color:var(--ink-muted);line-height:1.55;margin:4px 0 13px}
+.consistency-grid{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+.consistency-day{border:0;padding:0;height:auto;aspect-ratio:1;border-radius:7px;background:var(--track);transition:transform .17s ease,background .17s ease}
+.consistency-day.tier-0{background:var(--track)}
+.consistency-day.tier-1{background:#dcd4ff}
+.consistency-day.tier-2{background:#c1affc}
+.consistency-day.tier-3{background:#a18af7}
+.consistency-day.tier-4{background:#7760e6}
+body.dark .consistency-day.tier-1{background:#413963}body.dark .consistency-day.tier-2{background:#65559a}body.dark .consistency-day.tier-3{background:#9080da}body.dark .consistency-day.tier-4{background:#b4a6ff}
+.consistency-day:hover{transform:scale(1.1);outline:2px solid var(--accent);outline-offset:2px}
+.trend-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--border);margin-top:16px;padding:15px 0 0}
+.insight-overline{color:var(--ink-light);font-size:9px;font-weight:800}
+.trend-summary p{font-size:11px;color:var(--ink-muted);margin:4px 0 0}
+.trend-delta{font-size:18px;letter-spacing:-.05em;white-space:nowrap}
+.trend-delta.positive{color:#2baa87}.trend-delta.negative{color:#e07887}
+.insight-subsection{border-top:1px solid var(--border);margin-top:15px;padding-top:14px}
+.insight-subsection h3{font-size:13px;font-weight:750;letter-spacing:-.02em;margin-bottom:3px}
+.insight-row{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:8px 0;color:var(--ink);font-size:11px}
+.insight-row span{display:flex;align-items:center;gap:7px;min-width:0}.insight-row span .habit-emoji,.insight-row svg{flex-shrink:0}
+.insight-row strong{color:var(--accent);font-size:12px;white-space:nowrap}
+.archive-list{margin:0 0 10px;padding:0 3px}
+.archive-item{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:7px 0;padding:7px 8px;background:var(--surface-alt);border-radius:12px}
+.archive-item>span{display:flex;align-items:center;gap:10px;min-width:0;font-size:13px;font-weight:650}
+.cloud-controls{background:var(--surface-alt);border:1px solid var(--border);padding:12px;border-radius:14px;margin:12px 0 16px}
+.cloud-controls>label{font-size:12px;color:var(--ink-muted);display:block;margin-bottom:8px}
+.cloud-input-row{display:flex;gap:8px;flex-wrap:wrap}
+.cloud-input-row input{min-width:150px;flex:1;min-height:43px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--ink);padding:9px 12px}
+.cloud-input-row button{min-height:43px}
+.cloud-actions{display:flex;gap:8px;margin-top:8px}
+.cloud-actions button{min-height:39px}
+.cloud-hint{font-size:11px;line-height:1.55;color:var(--ink-muted);margin:8px 0 0}
+.primary-btn,.secondary-btn,.small-icon-btn,.date-navigator button,.cal-controls button,.category-trigger,.quiet-button{min-height:42px}
+@media(max-width:1100px){.habit-name{font-size:14px}}
+@media(max-width:540px){
+ .habit-actions .done-button{min-height:40px}
+ .habit-actions .edit-button{min-width:34px}
+ .trends-panel{padding:19px 17px}
+ .cloud-actions button{flex:1}
+ .repeat-weekdays span{height:38px}
+}
+@media(prefers-reduced-motion:reduce){.consistency-day,.panel,.stat-card,.habit-item{transition:none!important;animation:none!important}}

@@ -153,24 +153,72 @@
       for(let i=0;i<7;i++) logs[dateKey(dateOffset(now,-i))]=samples[i];
       return {habits:structuredClone(defaultHabits),categories:[...DEFAULT_CATEGORIES],categoryIcons:{...DEFAULT_CATEGORY_ICONS},logs,theme:'light',demo:true,awards:[]};
     };
+    // Dayflow 2.0: schedule-aware, dated habits. Old storage is upgraded in place.
+    const DEFAULT_SCHEDULE=()=>({type:'daily',days:[0,1,2,3,4,5,6],weeklyTarget:3});
+    function validSchedule(v){
+      if(!v||typeof v!=='object')return DEFAULT_SCHEDULE();
+      const type=['daily','days','weekly'].includes(v.type)?v.type:'daily';
+      const days=[...new Set((Array.isArray(v.days)?v.days:[]).map(Number).filter(x=>Number.isInteger(x)&&x>=0&&x<7))].sort();
+      return {type,days:type==='days'?days:[0,1,2,3,4,5,6],weeklyTarget:clamp(Math.round(validNumber(v.weeklyTarget)||3),1,7)};
+    }
+    function hydrate(raw){
+      const cats=mergedCategories(raw.categories,raw.habits||[]);
+      const savedKeys=Object.keys(raw.logs||{}).filter(k=>/^\d{4}-\d\d-\d\d$/.test(k)).sort();
+      const earliest=savedKeys[0]||dateKey(today());
+      const habits=(raw.habits||[]).map(h=>({ ...h,
+        schedule:validSchedule(h.schedule),
+        createdAt:/^\d{4}-\d\d-\d\d$/.test(h.createdAt||'')?h.createdAt:earliest,
+        archivedAt:/^\d{4}-\d\d-\d\d$/.test(h.archivedAt||'')?h.archivedAt:null
+      }));
+      const obj={...raw,habits,categories:cats,categoryIcons:normalizeCategoryIcons(raw.categoryIcons,cats),logs:raw.logs||{},snapshots:raw.snapshots||{},awards:Array.isArray(raw.awards)?raw.awards.filter(v=>MILESTONES.some(m=>m.days===v)):[],theme:raw.theme==='dark'?'dark':'light',demo:!!raw.demo,modifiedAt:raw.modifiedAt||new Date().toISOString()};
+      // Migrate old data once, preserving the goal and habit list for dates already recorded.
+      if(!raw.modelVersion){
+        const first=earliest;
+        let d=dateFromKey(first),last=dateOffset(today(),-1),limit=0;
+        while(dayDiff(d,last)<=0 && limit++<1096){const key=dateKey(d);if(!obj.snapshots[key])obj.snapshots[key]=habits.filter(h=>h.createdAt<=key).map(snapshotHabit);d=dateOffset(d,1)}
+      }
+      obj.modelVersion=2;
+      return obj;
+    }
+    function snapshotHabit(h){return {id:h.id,name:h.name,category:h.category,icon:h.icon,color:h.color,goal:h.goal,step:h.step,unit:h.unit,schedule:validSchedule(h.schedule),createdAt:h.createdAt,archivedAt:h.archivedAt||null};}
     function loadState(){
-      try{
-        const raw=localStorage.getItem(STORAGE_KEY);
-        if(raw){const loaded=JSON.parse(raw);if(Array.isArray(loaded.habits)&&loaded.logs&&typeof loaded.logs==='object'){const categories=mergedCategories(loaded.categories,loaded.habits);return {habits:loaded.habits,categories,categoryIcons:normalizeCategoryIcons(loaded.categoryIcons,categories),logs:loaded.logs,theme:loaded.theme==='dark'?'dark':'light',demo:!!loaded.demo,awards:Array.isArray(loaded.awards)?loaded.awards.filter(v=>MILESTONES.some(m=>m.days===v)):[]};}}
-      }catch(e){console.warn('Could not load saved tracker data',e)}
-      return initialDemo();
+      try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const loaded=JSON.parse(raw);if(Array.isArray(loaded.habits)&&loaded.logs&&typeof loaded.logs==='object')return hydrate(loaded)}}
+      catch(e){console.warn('Could not load saved tracker data',e)}
+      return hydrate(initialDemo());
     }
     let state=loadState(),selectedDate=today(),calendarMonth=new Date(today().getFullYear(),today().getMonth(),1),filter='All',search='',editingId=null,chosenIcon='sparkles',chosenColor=colorChoices[0],chosenCategory='Health',chosenCategoryIcon='sparkles',iconGroup='All',emojiSearch='',toastTimeout;
-    function save(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch(e){toast('Browser storage is unavailable. Export a backup to save changes.')}}
+    function save(){
+      state.modifiedAt=new Date().toISOString();
+      try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.dispatchEvent(new Event('dayflow:saved'))}
+      catch(e){toast('Browser storage is unavailable. Export a backup to save changes.')}
+    }
+    function snapshotPast(){
+      const earliest=state.habits.map(h=>h.createdAt).sort()[0]||dateKey(today());
+      let d=dateFromKey(earliest),end=dateOffset(today(),-1),i=0;
+      while(dayDiff(d,end)<=0&&i++<1096){const key=dateKey(d);if(!state.snapshots[key])state.snapshots[key]=state.habits.filter(h=>h.createdAt<=key&&(!h.archivedAt||h.archivedAt>key)).map(snapshotHabit);d=dateOffset(d,1)}
+    }
+    function habitSet(date){
+      const key=dateKey(date);
+      if(key<dateKey(today()) && Object.hasOwn(state.snapshots,key))return state.snapshots[key];
+      return state.habits.filter(h=>h.createdAt<=key&&(!h.archivedAt||h.archivedAt>key));
+    }
+    function dueHabit(date,h){
+      const sch=validSchedule(h.schedule);
+      if(sch.type==='weekly')return false; // flexible weekly items never penalize missed calendar days
+      return sch.type==='daily'||sch.days.includes((date.getDay()+6)%7);
+    }
+    function trackedHabits(date){return habitSet(date).filter(h=>dueHabit(date,h))}
+    function weekSessions(date,h){const d=startOfWeek(date);return Array.from({length:7},(_,i)=>dateOffset(d,i)).filter(x=>dayDiff(x,today())<=0 && habitSet(x).some(p=>p.id===h.id&&completed(x,p))).length}
     function getAmount(date,id){return Math.max(0,validNumber((state.logs[dateKey(date)]||{})[id]))}
     function completed(date,h){return getAmount(date,h.id)>=h.goal}
     function dayStats(date){
-      const n=state.habits.length;
-      if(!n)return {done:0,total:0,percent:0,active:false};
-      const done=state.habits.filter(h=>completed(date,h)).length;
-      const avg=state.habits.reduce((sum,h)=>sum+Math.min(1,getAmount(date,h.id)/h.goal),0)/n;
-      return {done,total:n,percent:Math.round(avg*100),active:done>0};
+      const due=trackedHabits(date),n=due.length;
+      const done=due.filter(h=>completed(date,h)).length;
+      const avg=n?due.reduce((sum,h)=>sum+Math.min(1,getAmount(date,h.id)/h.goal),0)/n:0;
+      const active=habitSet(date).some(h=>completed(date,h));
+      return {done,total:n,percent:Math.round(avg*100),active,perfect:n>0&&done===n};
     }
+    window.DayflowBridge={read:()=>JSON.parse(JSON.stringify(state)),replace:raw=>{state=hydrate(raw);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}catch{};document.body.classList.toggle('dark',state.theme==='dark');$('#theme-toggle-icon').innerHTML=icon(state.theme==='dark'?'sun':'moon');$('#settings-dark-toggle').checked=state.theme==='dark';render();}};
     function currentStreak(){
       let end=today(),streak=0;
       if(!dayStats(end).active)end=dateOffset(end,-1);
@@ -227,7 +275,7 @@
     }
     function closeCelebration(){const root=$('#streak-celebration');if(root.classList.contains('hidden'))return;root.classList.add('hidden');document.body.style.overflow='';if(celebrationReturnFocus?.isConnected)celebrationReturnFocus.focus();}
     function weekStats(date){
-      const first=startOfWeek(date),days=Array.from({length:7},(_,i)=>dateOffset(first,i)),included=days.filter(d=>dayDiff(d,today())<=0),n=included.length||1;
+      const first=startOfWeek(date),days=Array.from({length:7},(_,i)=>dateOffset(first,i)),included=days.filter(d=>dayDiff(d,today())<=0&&dayStats(d).total>0),n=included.length||1;
       return {days,avg:Math.round(included.reduce((s,d)=>s+dayStats(d).percent,0)/n),active:included.filter(d=>dayStats(d).active).length};
     }
     function setTheme(value){state.theme=value==='dark'?'dark':'light';document.body.classList.toggle('dark',state.theme==='dark');$('#theme-toggle-icon').innerHTML=icon(state.theme==='dark'?'sun':'moon');$('#settings-dark-toggle').checked=state.theme==='dark';save()}
@@ -238,15 +286,15 @@
       $('#hero-title').innerHTML=(isToday?'Make today count':diff<0?'Review your progress':'Plan your next win')+' <span aria-hidden="true">✦</span>';
       $('#hero-subtitle').textContent=isToday?'Keep showing up. Every small step is a win.':`${formatDay(selectedDate)} · Your habits, your pace.`;
       $('#today-button').textContent=isToday?'Today':formatShort(selectedDate);
-      $('#habit-day-label').textContent=`${isToday?'Today':formatShort(selectedDate)} · Tap + to log progress or ✓ to finish a habit.`;
+      $('#habit-day-label').textContent=`${isToday?'Today':formatShort(selectedDate)} · Only scheduled habits count toward the daily total.`;
       $('#demo-strip').classList.toggle('hidden',!state.demo);
     }
     function renderStats(){
       const s=dayStats(selectedDate),week=weekStats(selectedDate),streak=currentStreak();
       $('#completion-count').innerHTML=`${s.done} <span style="font-size:17px;letter-spacing:-.4px;color:var(--ink-light);font-weight:600">/ ${s.total}</span>`;
-      $('#completion-desc').textContent=`Habits completed ${dayDiff(selectedDate,today())===0?'today':'on this day'}`;
+      $('#completion-desc').textContent=`Habits finished / scheduled ${dayDiff(selectedDate,today())===0?'today':'on this day'}`;
       $('#global-percent').textContent=s.percent+'%';$('#global-ring').style.setProperty('--pct',s.percent);
-      $('.completion-stat').classList.toggle('day-all-complete',s.total>0&&s.done===s.total);
+      $('.completion-stat').classList.toggle('day-all-complete',s.perfect);
       $('#streak-value').textContent=streak;
       $('#streak-note').textContent=streak>0?`${streak} consecutive active ${streak===1?'day':'days'}`:'Finish one habit to start';
       const tier=tierFor(streak),next=MILESTONES.find(t=>streak<t.days);
@@ -262,23 +310,24 @@
       $('#weekly-note').textContent=`${week.active} active ${week.active===1?'day':'days'} this week`;
     }
     function habitMarkup(h){
-      const amount=getAmount(selectedDate,h.id),percent=clamp(Math.round(amount/h.goal*100),0,100),isComplete=amount>=h.goal;
+      const amount=getAmount(selectedDate,h.id),percent=clamp(Math.round(amount/h.goal*100),0,100),isComplete=amount>=h.goal,optional=validSchedule(h.schedule).type==='weekly',readOnly=!state.habits.some(x=>x.id===h.id&&!x.archivedAt);
+      const weeklyLabel=optional?` · ${weekSessions(selectedDate,h)}/${validSchedule(h.schedule).weeklyTarget} weekly sessions`:'';
       const unit=plural(h.unit,h.goal),currentAmount=Math.round(amount*100)/100;
       const color=/^#[0-9a-f]{6}$/i.test(h.color)?h.color:colorChoices[0];
       return `<article class="habit-item ${isComplete?'is-complete':''}" style="--habit-color:${color};--habit-soft:${soft(color)};--pct:${percent};" data-habit-id="${escapeHTML(h.id)}">
         <div class="habit-ring" style="--ring-progress:${percent}%" aria-label="${percent}% completed"><div class="habit-ring-center"><span class="habit-icon">${livelyIcon(h.icon,25)}</span></div></div>
-        <div class="habit-info"><div class="habit-name">${escapeHTML(h.name)}</div><div class="habit-meta"><span>${currentAmount.toLocaleString('en-US')} / ${h.goal.toLocaleString('en-US')} ${escapeHTML(unit)}</span><i class="meta-point"></i><span>${escapeHTML(h.category)}</span></div><div class="habit-meter"><div class="small-track"><div class="small-fill" style="--pct:${percent}%"></div></div><span>${percent}%</span></div></div>
-        <div class="habit-actions"><div class="stepper"><button type="button" data-habit-action="decrease" aria-label="Decrease ${escapeHTML(h.name)}" ${amount===0?'disabled':''}>${icon('minus',13)}</button><strong>${h.step>=1000?(h.step/1000)+'k':'+'+h.step}</strong><button type="button" data-habit-action="increase" aria-label="Add ${h.step} ${escapeHTML(h.unit)} to ${escapeHTML(h.name)}" ${isComplete?'disabled':''}>${icon('plus',13)}</button></div><button class="done-button ${isComplete?'completed':''}" data-habit-action="toggle" aria-label="${isComplete?'Reset':'Complete'} ${escapeHTML(h.name)}">${icon('check',14)}<span>${isComplete?'Done':'Finish'}</span></button><button type="button" class="edit-button" data-habit-action="edit" aria-label="Edit ${escapeHTML(h.name)}">${icon('settings',15)}</button></div>
+        <div class="habit-info"><div class="habit-name">${escapeHTML(h.name)}</div><div class="habit-meta"><span>${currentAmount.toLocaleString('en-US')} / ${h.goal.toLocaleString('en-US')} ${escapeHTML(unit)}</span><i class="meta-point"></i><span>${escapeHTML(h.category)}${optional?` <span class="optional-tag">Flexible weekly</span>`:''}</span></div><div class="habit-meter"><div class="small-track"><div class="small-fill" style="--pct:${percent}%"></div></div><span>${percent}%${optional?` · ${weekSessions(selectedDate,h)}/${validSchedule(h.schedule).weeklyTarget}wk`:''}</span></div></div>
+        <div class="habit-actions"><div class="stepper"><button type="button" data-habit-action="decrease" aria-label="Decrease ${escapeHTML(h.name)}" ${amount===0?'disabled':''}>${icon('minus',13)}</button><strong>${h.step>=1000?(h.step/1000)+'k':'+'+h.step}</strong><button type="button" data-habit-action="increase" aria-label="Add ${h.step} ${escapeHTML(h.unit)} to ${escapeHTML(h.name)}" ${isComplete?'disabled':''}>${icon('plus',13)}</button></div><button class="done-button ${isComplete?'completed':''}" data-habit-action="toggle" aria-label="${isComplete?'Reset':'Complete'} ${escapeHTML(h.name)}">${icon('check',14)}<span>${isComplete?'Done':'Finish'}</span></button><button type="button" class="edit-button" data-habit-action="edit" aria-label="Edit ${escapeHTML(h.name)}" ${readOnly?'disabled':''}>${icon('settings',15)}</button></div>
       </article>`;
     }
     function renderHabits(){
       const available=mergedCategories(state.categories,state.habits);
       if(filter!=='All'&&!available.includes(filter))filter='All';
       $('#habit-filters').innerHTML=['All',...available].map(c=>`<button type="button" class="filter ${filter===c?'active':''}" data-filter="${escapeHTML(c)}" aria-pressed="${filter===c}">${c==='All'?'All habits':escapeHTML(c)}</button>`).join('');
-      const matches=state.habits.filter(h=>(filter==='All'||h.category===filter)&&h.name.toLowerCase().includes(search.toLowerCase()));
-      $('#habits-count').textContent=`${state.habits.length} ${state.habits.length===1?'habit':'habits'}`;
-      $('#habit-list').innerHTML=matches.length?matches.map(habitMarkup).join(''):`<div class="empty"><div class="empty-icon">${icon('search',24)}</div><h3>Nothing here yet</h3><p>${state.habits.length?'Try a different filter or search.':'Add your first habit to get started.'}</p></div>`;
-      document.querySelectorAll('[data-filter]').forEach(el=>{el.classList.toggle('active',el.dataset.filter===filter);el.setAttribute('aria-pressed',String(el.dataset.filter===filter))});
+      const scheduled=habitSet(selectedDate).filter(h=>dueHabit(selectedDate,h)||validSchedule(h.schedule).type==='weekly');
+      const matches=scheduled.filter(h=>(filter==='All'||h.category===filter)&&h.name.toLowerCase().includes(search.toLowerCase()));
+      $('#habits-count').textContent=`${trackedHabits(selectedDate).length} scheduled · ${scheduled.filter(h=>validSchedule(h.schedule).type==='weekly').length} flexible`;
+      $('#habit-list').innerHTML=matches.length?matches.map(habitMarkup).join(''):`<div class="empty"><div class="empty-icon">${icon('calendar',24)}</div><h3>Nothing scheduled here</h3><p>${state.habits.length?'Try another day or filter.':'Add your first habit to get started.'}</p></div>`;
     }
     function renderCalendar(){
       $('#calendar-month').textContent=calendarMonth.toLocaleDateString('en-US',{month:'long',year:'numeric'});
@@ -299,10 +348,10 @@
       $('#week-completed-note').textContent=`${w.active} of ${w.days.filter(d=>dayDiff(d,today())<=0).length} days active`;
       const labels=['M','T','W','T','F','S','S'];
       $('#week-chart').innerHTML=w.days.map((d,i)=>{const pct=dayStats(d).percent,isToday=dayDiff(d,today())===0,future=dayDiff(d,today())>0;return `<div class="week-col ${isToday?'today':''} ${future?'future':''} ${pct===100?'all-done':''}" title="${escapeHTML(formatDay(d))} — ${pct}%"><div class="week-bar-box"><div class="week-bar" style="--bar:${pct}%"></div></div><label>${labels[i]}</label></div>`}).join('');
-      const ranked=state.habits.map(h=>({...h,days:w.days.filter(d=>dayDiff(d,today())<=0&&completed(d,h)).length})).sort((a,b)=>b.days-a.days).slice(0,3);
+      const ranked=state.habits.filter(h=>!h.archivedAt).map(h=>({...h,days:w.days.filter(d=>dayDiff(d,today())<=0&&habitSet(d).some(x=>x.id===h.id&&completed(d,x))).length})).sort((a,b)=>b.days-a.days).slice(0,3);
       $('#leader-list').innerHTML=ranked.length?ranked.map((h,i)=>`<div class="leader-item"><span class="medal">${i+1}</span><div class="leader-icon" style="--hsoft:${soft(h.color)};--hcolor:${h.color}">${livelyIcon(h.icon,24)}</div><div class="leader-info"><strong>${escapeHTML(h.name)}</strong><span>${escapeHTML(h.category)}</span></div><span class="leader-count">${h.days}/7</span></div>`).join(''):'<p class="subhead">Create a habit to see your weekly highlights.</p>';
     }
-    function render(){renderHeader();renderStats();renderHabits();renderCalendar();renderWeek();renderBadges()}
+    function render(){renderHeader();renderStats();renderHabits();renderCalendar();renderWeek();renderBadges();renderTrends()}
 
     const reduceMotion=()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches||false;
     // Confetti is visual-only and mounted outside the list, so re-rendering cannot cancel a burst.
@@ -351,9 +400,11 @@
       }
     }
     function setAmount(id,val){
-      const h=state.habits.find(h=>h.id===id);if(!h)return;
-      const wasComplete=completed(selectedDate,h),key=dateKey(selectedDate);
-      const prevPct=Math.round(Math.min(1,getAmount(selectedDate,id)/h.goal)*100),wasPerfect=dayStats(selectedDate).done===state.habits.length&&state.habits.length>0;
+      const h=habitSet(selectedDate).find(h=>h.id===id);if(!h)return;
+      if(dayDiff(selectedDate,today())>0){toast('You can plan future habits, but log them on the day.');return}
+      const wasComplete=completed(selectedDate,h),key=dateKey(selectedDate),before=dayStats(selectedDate);
+      const prevPct=Math.round(Math.min(1,getAmount(selectedDate,id)/h.goal)*100);
+      if(key<dateKey(today())&&!state.snapshots[key])state.snapshots[key]=habitSet(selectedDate).map(snapshotHabit);
       if(!state.logs[key])state.logs[key]={};state.logs[key][id]=clamp(val,0,h.goal);
       save();render();
       $('#global-ring').classList.remove('stat-refreshed');void $('#global-ring').offsetWidth;$('#global-ring').classList.add('stat-refreshed');
@@ -361,22 +412,13 @@
       animateHabitProgress(id,prevPct,nextPct);
       if(!wasComplete && nowComplete){
         const item=[...document.querySelectorAll('#habit-list [data-habit-id]')].find(el=>el.dataset.habitId===id);
-        if(item){
-          item.classList.add('habit-just-finished');
-          burstAt(item.querySelector('.done-button'),h.color,22);
-          setTimeout(()=>item.classList.remove('habit-just-finished'),1000);
-        }
+        if(item){item.classList.add('habit-just-finished');burstAt(item.querySelector('.done-button'),h.color,18);setTimeout(()=>item.classList.remove('habit-just-finished'),900)}
       }
-      const nowPerfect=state.habits.length>0&&dayStats(selectedDate).done===state.habits.length;
-      if(!wasPerfect&&nowPerfect){
-        $('.completion-stat').classList.add('day-all-just-finished');
-        burstAt($('#global-ring'),h.color,35);
-        animatePerfectWeek(selectedDate);
-        setTimeout(()=>$('.completion-stat')?.classList.remove('day-all-just-finished'),1300);
-        toast('Perfect day! All your habits are complete ✨');
+      if(!before.perfect&&dayStats(selectedDate).perfect){
+        $('.completion-stat').classList.add('day-all-just-finished');burstAt($('#global-ring'),h.color,28);animatePerfectWeek(selectedDate);
+        setTimeout(()=>$('.completion-stat')?.classList.remove('day-all-just-finished'),1300);toast('Perfect day! Every scheduled habit is done ✨');
       }
-      syncAwards(true);
-      renderBadges();renderStats();
+      syncAwards(true);renderBadges();renderStats();
     }
     function changeDate(date){selectedDate=new Date(date.getFullYear(),date.getMonth(),date.getDate());calendarMonth=new Date(selectedDate.getFullYear(),selectedDate.getMonth(),1);render()}
     function setCategory(name){
@@ -436,11 +478,11 @@
       chosenIcon=h?.icon||'sparkles';chosenColor=h?.color||colorChoices[0];
       chosenCategory=h?.category||'Health';chosenCategoryIcon=categoryIconId(chosenCategory);iconGroup='All';emojiSearch='';
       $('#habit-modal-title').textContent=h?'Edit habit':'Create a habit';$('#save-habit-label').textContent=h?'Save changes':'Create habit';
-      $('#delete-habit').classList.toggle('hidden',!h);
+      $('#delete-habit').classList.toggle('hidden',!h);$('#delete-habit').textContent='Archive habit';
       $('#habit-name-input').value=h?.name||'';$('#habit-unit-input').value=h?.unit||'time';
       $('#habit-goal-input').value=h?.goal||1;$('#habit-step-input').value=h?.step||1;
       $('#emoji-search-input').value='';setCategoryMenu(false);setCategory(chosenCategory);
-      renderPickers();renderCategoryIconChoices();$('#habit-modal-backdrop').classList.remove('hidden');$('#habit-name-input').focus();
+      renderPickers();renderCategoryIconChoices();renderScheduleEditor(validSchedule(h?.schedule));$('#habit-modal-backdrop').classList.remove('hidden');$('#habit-name-input').focus();
     }
     function renderPickers(){
       const groups=['All','Wellness','Fitness','Focus','Lifestyle'];
@@ -453,7 +495,46 @@
     function closeModal(selector){$(selector).classList.add('hidden');if(selector==='#habit-modal-backdrop')setCategoryMenu(false);editingId=null}
     function makeId(){return 'h'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
     function startFresh(){if(!confirm('Clear the example progress and start from zero? Your habit list will stay the same.'))return;state.logs={};state.demo=false;state.awards=[];save();render();toast('Fresh start! Your dashboard is all yours.');}
-    function showSettings(){closeMobile();$('#settings-dark-toggle').checked=state.theme==='dark';$('#settings-modal-backdrop').classList.remove('hidden')}
+    function showSettings(){closeMobile();$('#settings-dark-toggle').checked=state.theme==='dark';renderArchived();$('#settings-modal-backdrop').classList.remove('hidden')}
+    function readScheduleEditor(){
+      const type=$('#habit-repeat-type').value;
+      const days=[...document.querySelectorAll('#repeat-weekdays input:checked')].map(el=>Number(el.value));
+      return validSchedule({type,days,weeklyTarget:Number($('#habit-weekly-target').value)});
+    }
+    function renderScheduleEditor(schedule=DEFAULT_SCHEDULE()){
+      $('#habit-repeat-type').value=schedule.type;
+      document.querySelectorAll('#repeat-weekdays input').forEach(el=>el.checked=schedule.days.includes(Number(el.value)));
+      $('#habit-weekly-target').value=schedule.weeklyTarget;
+      $('#repeat-weekdays').classList.toggle('hidden',schedule.type!=='days');
+      $('#weekly-target-row').classList.toggle('hidden',schedule.type!=='weekly');
+      $('#daily-target-label').textContent=schedule.type==='weekly'?'Target per session':'Daily target';
+    }
+    function renderTrends(){
+      const now=today(),days=Array.from({length:30},(_,i)=>dateOffset(now,i-29));
+      $('#consistency-grid').innerHTML=days.map(d=>{
+        const st=dayStats(d),val=st.total?st.done/st.total:0,has=st.total>0;
+        const level=!has?0:val===1?4:val>=.7?3:val>=.35?2:val>0?1:0;
+        return `<button type="button" class="consistency-day tier-${level}" data-consistency-date="${dateKey(d)}" title="${escapeHTML(formatDay(d))} · ${st.done}/${st.total} scheduled habits finished" aria-label="${escapeHTML(formatDay(d))} ${st.done} of ${st.total} finished"></button>`
+      }).join('');
+      const prev=Array.from({length:7},(_,i)=>dateOffset(now,i-13)),curr=Array.from({length:7},(_,i)=>dateOffset(now,i-6));
+      const avg=dates=>{const due=dates.filter(d=>dayStats(d).total>0);return due.length?Math.round(due.reduce((s,d)=>s+dayStats(d).percent,0)/due.length):0};
+      const previous=avg(prev),current=avg(curr),delta=current-previous;
+      $('#trend-week').textContent=`${delta>0?'+':''}${delta} pts`;
+      $('#trend-week').className=`trend-delta ${delta>=0?'positive':'negative'}`;
+      $('#trend-description').textContent=`${current}% in the last 7 days vs ${previous}% in the previous 7 days`;
+      const start=dateOffset(now,-13),recent=Array.from({length:14},(_,i)=>dateOffset(start,i));
+      const scores=state.habits.filter(h=>!h.archivedAt).map(h=>{
+        const dates=recent.filter(d=>habitSet(d).some(x=>x.id===h.id&&dueHabit(d,x)));
+        return {...h,score:dates.length?Math.round(100*dates.filter(d=>habitSet(d).some(x=>x.id===h.id&&completed(d,x))).length/dates.length):null,days:dates.length};
+      }).filter(h=>h.days>0).sort((a,b)=>a.score-b.score).slice(0,3);
+      $('#habit-insight-list').innerHTML=scores.length?scores.map(h=>`<div class="insight-row"><span>${livelyIcon(h.icon,20)} ${escapeHTML(h.name)}</span><strong>${h.score}%</strong></div>`).join(''):'<p class="subhead">Start tracking to see a habit breakdown.</p>';
+      const weekly=state.habits.filter(h=>!h.archivedAt&&validSchedule(h.schedule).type==='weekly');
+      $('#weekly-goals-list').innerHTML=weekly.length?weekly.map(h=>`<div class="insight-row"><span>${livelyIcon(h.icon,20)} ${escapeHTML(h.name)}</span><strong>${weekSessions(now,h)}/${validSchedule(h.schedule).weeklyTarget}</strong></div>`).join(''):'<p class="subhead">Create a weekly-goal habit to see its progress.</p>';
+    }
+    function renderArchived(){
+      const archived=state.habits.filter(h=>h.archivedAt);
+      $('#archived-list').innerHTML=archived.length?archived.map(h=>`<div class="archive-item"><span>${livelyIcon(h.icon,22)} ${escapeHTML(h.name)}</span><button type="button" data-restore-habit="${escapeHTML(h.id)}" class="secondary-btn">Restore</button></div>`).join(''):'<p class="subhead">No archived habits yet.</p>';
+    }
     function closeMobile(){$('#sidebar').classList.remove('open');$('#mobile-scrim').classList.remove('show')}
     $('#habit-list').addEventListener('click',e=>{
       const btn=e.target.closest('[data-habit-action]');if(!btn)return;
@@ -495,20 +576,24 @@
     $('#emoji-filters').addEventListener('click',e=>{const b=e.target.closest('[data-emoji-group]');if(b){iconGroup=b.dataset.emojiGroup;renderPickers()}});
     $('#emoji-search-input').addEventListener('input',e=>{emojiSearch=e.target.value.toLowerCase().trim();renderPickers()});
     $('#color-picker').addEventListener('click',e=>{const b=e.target.closest('[data-color-choice]');if(b){chosenColor=b.dataset.colorChoice;renderPickers()}});
+    $('#habit-repeat-type').addEventListener('change',()=>renderScheduleEditor(readScheduleEditor()));
+    $('#consistency-grid').addEventListener('click',e=>{const b=e.target.closest('[data-consistency-date]');if(b)changeDate(dateFromKey(b.dataset.consistencyDate))});
+    $('#archived-list').addEventListener('click',e=>{const b=e.target.closest('[data-restore-habit]');if(!b)return;const h=state.habits.find(h=>h.id===b.dataset.restoreHabit);if(!h)return;snapshotPast();h.archivedAt=null;h.createdAt=dateKey(today());save();renderArchived();render();toast(`${h.name} restored.`)});
     $('#habit-form').addEventListener('submit',e=>{
       e.preventDefault();const name=$('#habit-name-input').value.trim(),unit=$('#habit-unit-input').value.trim().toLowerCase(),goal=Number($('#habit-goal-input').value),step=Number($('#habit-step-input').value);
       if(!name||!unit||!Number.isInteger(goal)||goal<1||goal>100000||!Number.isInteger(step)||step<1||step>100000){toast('Enter valid habit details and targets.');return}
-      const payload={name,unit,goal,step,category:chosenCategory,icon:chosenIcon,color:chosenColor};
+      const schedule=readScheduleEditor();
+      if(schedule.type==='days' && !schedule.days.length){toast('Select at least one weekday for this habit.');return}
+      const payload={name,unit,goal,step,category:chosenCategory,icon:chosenIcon,color:chosenColor,schedule};
+      snapshotPast();
       if(editingId){const i=state.habits.findIndex(h=>h.id===editingId);if(i>=0)state.habits[i]={...state.habits[i],...payload}}
-      else state.habits.push({id:makeId(),...payload});
+      else state.habits.push({id:makeId(),createdAt:dateKey(today()),archivedAt:null,...payload});
       const wasEditing=!!editingId;save();closeModal('#habit-modal-backdrop');filter='All';search='';$('#habit-search').value='';render();toast(wasEditing?'Habit updated!':'New habit added!');
     });
     $('#delete-habit').addEventListener('click',()=>{
-      if(!editingId)return;const target=state.habits.find(h=>h.id===editingId);
-      if(!confirm(`Delete "${target?.name||'this habit'}" and its saved progress?`))return;
-      state.habits=state.habits.filter(h=>h.id!==editingId);
-      for(const log of Object.values(state.logs))delete log[editingId];
-      save();closeModal('#habit-modal-backdrop');render();toast('Habit deleted.');
+      if(!editingId)return;const target=state.habits.find(h=>h.id===editingId);if(!target)return;
+      if(!confirm(`Archive "${target.name}"? It will disappear from upcoming days but its history will be preserved. You can restore it in Settings.`))return;
+      snapshotPast();target.archivedAt=dateKey(today());save();closeModal('#habit-modal-backdrop');render();toast('Habit archived. Previous results preserved.');
     });
     $('#settings-open').addEventListener('click',showSettings);
     $('#settings-modal-close').addEventListener('click',()=>closeModal('#settings-modal-backdrop'));
@@ -526,7 +611,7 @@
     $('#celebration-backdrop').addEventListener('click',closeCelebration);
     $('#reset-data').addEventListener('click',()=>{
       if(!confirm('Reset all habits and progress? This cannot be undone unless you have a backup.'))return;
-      const theme=state.theme;state={habits:structuredClone(defaultHabits),categories:[...DEFAULT_CATEGORIES],categoryIcons:{...DEFAULT_CATEGORY_ICONS},logs:{},demo:false,theme,awards:[]};
+      const theme=state.theme;state=hydrate({habits:structuredClone(defaultHabits),categories:[...DEFAULT_CATEGORIES],categoryIcons:{...DEFAULT_CATEGORY_ICONS},logs:{},snapshots:{},demo:false,theme,awards:[],modelVersion:2});
       filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Tracker reset. A fresh chapter begins!');
     });
     $('#export-data').addEventListener('click',()=>{
@@ -537,13 +622,13 @@
     $('#import-input').addEventListener('change',async e=>{
       const file=e.target.files?.[0];if(!file)return;
       try{
-        if(file.size>2000000)throw Error('File is too large.');
+        if(file.size>15000000)throw Error('File is too large (15 MB limit).');
         const data=JSON.parse(await file.text());
         if(!Array.isArray(data.habits)||!data.logs||typeof data.logs!=='object'||data.habits.length>500)throw Error('Not a valid Dayflow backup.');
-        const cleaned=data.habits.map((h,i)=>({id:String(h.id||'import'+i).slice(0,100),name:String(h.name||'Habit').slice(0,48),category:cleanCategoryName(h.category)||'Lifestyle',icon:iconChoices.includes(h.icon)?h.icon:'sparkles',color:colorChoices.includes(h.color)?h.color:colorChoices[0],goal:clamp(Math.round(validNumber(h.goal)),1,100000),step:clamp(Math.round(validNumber(h.step)),1,100000),unit:String(h.unit||'time').slice(0,20)}));
+        const cleaned=data.habits.map((h,i)=>({id:String(h.id||'import'+i).slice(0,100),name:String(h.name||'Habit').slice(0,48),category:cleanCategoryName(h.category)||'Lifestyle',icon:iconChoices.includes(h.icon)?h.icon:'sparkles',schedule:validSchedule(h.schedule),createdAt:h.createdAt,archivedAt:h.archivedAt,color:colorChoices.includes(h.color)?h.color:colorChoices[0],goal:clamp(Math.round(validNumber(h.goal)),1,100000),step:clamp(Math.round(validNumber(h.step)),1,100000),unit:String(h.unit||'time').slice(0,20)}));
         if(!confirm('Import this backup? Your current habits and history will be replaced.'))return;
         const cleanLogs={};for(const [key,log] of Object.entries(data.logs)){if(!/^\d{4}-\d{2}-\d{2}$/.test(key)||!log||typeof log!=='object')continue;cleanLogs[key]={};for(const h of cleaned){const n=Number(log[h.id]);if(Number.isFinite(n))cleanLogs[key][h.id]=clamp(n,0,h.goal)}}
-        const categories=mergedCategories(data.categories,cleaned);state={habits:cleaned,categories,categoryIcons:normalizeCategoryIcons(data.categoryIcons,categories),logs:cleanLogs,theme:data.theme==='dark'?'dark':'light',demo:false,awards:Array.isArray(data.awards)?data.awards.filter(v=>MILESTONES.some(t=>t.days===v)):[]};syncAwards(false);setTheme(state.theme);filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Backup imported successfully!');
+        const categories=mergedCategories(data.categories,cleaned);state=hydrate({habits:cleaned,categories,categoryIcons:normalizeCategoryIcons(data.categoryIcons,categories),logs:cleanLogs,snapshots:data.snapshots,modelVersion:data.modelVersion,theme:data.theme==='dark'?'dark':'light',demo:false,awards:Array.isArray(data.awards)?data.awards.filter(v=>MILESTONES.some(t=>t.days===v)):[]});syncAwards(false);setTheme(state.theme);filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Backup imported successfully!');
       }catch(err){toast(err.message||'Could not read backup.')}finally{e.target.value=''}
     });
     document.querySelectorAll('.modal-backdrop').forEach(backdrop=>backdrop.addEventListener('click',e=>{if(e.target===backdrop)backdrop.classList.add('hidden')}));

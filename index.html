@@ -5,8 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#f7f8fc" />
   <meta name="description" content="Dayflow — your personal habit tracker with daily progress rings, calendar, weekly insights, and streaks." />
-  <title>Dayflow — Make every day count</title>
-  <link rel="stylesheet" href="./style.css?v=6">
+  <title>Dayflow — Your habits, your pace</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Dayflow — Make today count" />
+  <meta property="og:description" content="A thoughtful little space to build habits, celebrate streaks, and track your progress." />
+  <meta property="og:image" content="https://liszttrades.github.io/dayflow-habit-tracker/og-dayflow.png" />
+  <meta property="og:url" content="https://liszttrades.github.io/dayflow-habit-tracker/" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="./style.css?v=8">
 </head>
 <body>
   <div class="app">
@@ -60,8 +68,8 @@
         <div class="demo-strip" id="demo-strip"><span data-icon="sparkles"></span><span><b>Preview data:</b> Explore the dashboard with example progress.</span><button id="start-fresh">Start fresh</button></div>
         <section class="stats" aria-label="Your habit statistics">
           <div class="stat-card completion-stat">
-            <div class="stat-main"><div class="stat-label"><span data-icon="target"></span> Daily completion</div><div class="stat-value" id="completion-count">0 <span style="font-size:17px;letter-spacing:-.4px;color:var(--ink-light);font-weight:600">/ 10</span></div><p class="stat-description" id="completion-desc">Habits completed today</p></div>
-            <div class="global-ring" id="global-ring" style="--pct:0"><div class="global-ring-inner"><strong id="global-percent">0%</strong><span>progress</span></div></div>
+            <div class="stat-main"><div class="stat-label"><span data-icon="target"></span> Scheduled completion</div><div class="stat-value" id="completion-count">0 <span style="font-size:17px;letter-spacing:-.4px;color:var(--ink-light);font-weight:600">/ 10</span></div><p class="stat-description" id="completion-desc">Habits completed today</p></div>
+            <div class="global-ring" id="global-ring" style="--pct:0"><div class="global-ring-inner"><strong id="global-percent">0%</strong><span>target progress</span></div></div>
           </div>
           <div class="stat-card streak-stat" id="streak-stat" data-stage="0">
             <div class="stat-main">
@@ -95,7 +103,7 @@
         <div class="content">
           <section class="panel habits-panel" id="habits">
             <div class="section-heading">
-              <div><div class="heading-title"><h2>Your daily habits</h2><span class="heading-count" id="habits-count">10 habits</span></div><p class="subhead" id="habit-day-label">A little progress every day adds up.</p></div>
+              <div><div class="heading-title"><h2>Your scheduled habits</h2><span class="heading-count" id="habits-count">10 habits</span></div><p class="subhead" id="habit-day-label">A little progress every day adds up.</p></div>
               <button class="quiet-button" id="list-add"><span data-icon="plus"></span> Add</button>
             </div>
             <div class="filter-row">
@@ -118,6 +126,14 @@
               <div class="weekly-summary"><b id="weekly-summary-value">0%</b><span>average daily<br>progress</span></div>
               <div class="week-chart" id="week-chart"></div>
               <div class="week-foot"><span id="week-completed-note">0 of 7 days active</span><strong>Keep it going ↗</strong></div>
+            </section>
+            <section class="panel trends-panel" id="trends" aria-labelledby="trends-heading">
+              <div class="rail-title"><h2 id="trends-heading">Consistency · 30 days</h2><span data-icon="target" style="color:var(--accent)"></span></div>
+              <p class="insight-desc">Each square represents one day. Tap to review.</p>
+              <div class="consistency-grid" id="consistency-grid" aria-label="30-day habit consistency"></div>
+              <div class="trend-summary"><div><span class="insight-overline">WEEK-OVER-WEEK</span><p id="trend-description">Your change this week</p></div><strong id="trend-week" class="trend-delta">0 pts</strong></div>
+              <div class="insight-subsection"><h3>Habits to focus on</h3><p class="insight-desc">Scheduled completion · last 14 days</p><div id="habit-insight-list"></div></div>
+              <div class="insight-subsection"><h3>Flexible weekly goals</h3><div id="weekly-goals-list"></div></div>
             </section>
             <section class="panel badges-panel" id="badges">
               <div class="rail-title badge-rail-title"><div><span class="badge-eyebrow">YOUR COLLECTION</span><h2>Streak badges <span aria-hidden="true">✦</span></h2></div><button type="button" class="badge-preview-btn" id="preview-badges" title="See the 3-day animation">Preview <span aria-hidden="true">↗</span></button></div>
@@ -168,8 +184,22 @@
           <div class="field"><label for="habit-unit-input">Unit (singular)</label><input id="habit-unit-input" placeholder="e.g. minute, glass" maxlength="20" required></div>
         </div>
         <div class="field-row">
-          <div class="field"><label for="habit-goal-input">Daily target</label><input id="habit-goal-input" type="number" value="1" min="1" max="100000" required></div>
+          <div class="field"><label id="daily-target-label" for="habit-goal-input">Daily target</label><input id="habit-goal-input" type="number" value="1" min="1" max="100000" required></div>
           <div class="field"><label for="habit-step-input">Add per tap</label><input id="habit-step-input" type="number" value="1" min="1" max="100000" required></div>
+        </div>
+        <div class="field schedule-field"><label for="habit-repeat-type">Repeat schedule</label>
+          <select id="habit-repeat-type" aria-label="Repeat schedule">
+            <option value="daily">Every day</option>
+            <option value="days">Selected weekdays</option>
+            <option value="weekly">Flexible weekly goal</option>
+          </select>
+          <div id="repeat-weekdays" class="repeat-weekdays hidden" role="group" aria-label="Selected weekdays">
+            <label><input type="checkbox" value="0"><span>M</span></label><label><input type="checkbox" value="1"><span>T</span></label>
+            <label><input type="checkbox" value="2"><span>W</span></label><label><input type="checkbox" value="3"><span>T</span></label>
+            <label><input type="checkbox" value="4"><span>F</span></label><label><input type="checkbox" value="5"><span>S</span></label>
+            <label><input type="checkbox" value="6"><span>S</span></label>
+          </div>
+          <div id="weekly-target-row" class="weekly-target-row hidden"><label for="habit-weekly-target">Sessions to complete per week</label><select id="habit-weekly-target"><option value="1">1 time</option><option value="2">2 times</option><option value="3">3 times</option><option value="4">4 times</option><option value="5">5 times</option><option value="6">6 times</option><option value="7">7 times</option></select><p>Log this habit on any days you like. It won't count as a missed daily habit.</p></div>
         </div>
         <div class="field emoji-field">
           <div class="emoji-field-heading"><label id="icon-picker-label">Choose an icon</label><span class="emoji-note">Colorful, expressive emoji</span></div>
@@ -189,6 +219,15 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
       <div class="modal-header"><div><h2 id="settings-modal-title">Your settings</h2><p>Make Dayflow work the way you like.</p></div><button class="icon-button" id="settings-modal-close" aria-label="Close"><span data-icon="x"></span></button></div>
       <div class="settings-row"><div><strong>Dark mode</strong><p>A softer color palette for evening planning.</p></div><input class="toggle" id="settings-dark-toggle" type="checkbox" aria-label="Dark mode" /></div>
+      <div class="settings-row"><div><strong>Optional cloud sync</strong><p id="cloud-status">Offline mode · progress is stored only in this browser.</p></div><span data-icon="shield" style="color:var(--accent)"></span></div>
+      <div class="cloud-controls" id="cloud-controls">
+        <label for="cloud-email">Email (for a private sign-in link)</label>
+        <div class="cloud-input-row"><input type="email" id="cloud-email" placeholder="you@example.com" autocomplete="email"><button class="secondary-btn" id="cloud-login">Email me a sign-in link</button></div>
+        <div class="cloud-actions"><button class="secondary-btn" id="cloud-sync-now" disabled>Sync now</button><button class="secondary-btn" id="cloud-signout" disabled>Sign out</button></div>
+        <p id="cloud-help" class="cloud-hint">Cloud sync requires your own Supabase project. Until configured, local backup still works.</p>
+      </div>
+      <div class="settings-row"><div><strong>Archived habits</strong><p>Hide old habits without losing their historical progress.</p></div></div>
+      <div class="archive-list" id="archived-list"></div>
       <div class="settings-row"><div><strong>Local data</strong><p>Your data stays in this browser. Export a backup to keep it safe or move it to another device.</p></div><span data-icon="shield" style="color:#41ad91"></span></div>
       <div class="settings-row"><div><strong>Start over</strong><p>Remove all saved progress and restore the 10 example habits.</p></div><button class="danger-btn" id="reset-data">Reset</button></div>
       <div class="settings-buttons"><button class="secondary-btn" id="export-data"><span data-icon="download"></span> Export backup</button><button class="secondary-btn" id="import-button"><span data-icon="upload"></span> Import backup</button><input class="hidden" id="import-input" type="file" accept="application/json,.json"></div>
@@ -215,6 +254,8 @@
   </div>
   <div id="effect-layer" class="effect-layer" aria-hidden="true"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="./script.js?v=6" defer></script>
+  <script src="./config.js?v=2" defer></script>
+  <script src="./script.js?v=8" defer></script>
+  <script src="./cloud.js?v=2" defer></script>
 </body>
 </html>
