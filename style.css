@@ -854,3 +854,25 @@ body.dark .consistency-day.tier-1{background:#413963}body.dark .consistency-day.
  .repeat-weekdays span{height:38px}
 }
 @media(prefers-reduced-motion:reduce){.consistency-day,.panel,.stat-card,.habit-item{transition:none!important;animation:none!important}}
+
+/* Dayflow 2.0 floating dashboard motion — extend the lively weekly orb feel to streak and completion rings. */
+.stats .streak-visual,
+.completion-stat .global-ring{will-change:transform,box-shadow;transform:translateZ(0)}
+.stats .streak-stat-flame{animation:metric-flame-float 4.8s ease-in-out infinite}
+.stats .orb-twinkle-a{animation:metric-spark-drift 3.9s ease-in-out infinite}
+.stats .orb-twinkle-b{animation:metric-spark-drift 4.4s ease-in-out -1.1s infinite}
+.completion-stat .global-ring{animation:metric-orb-float 5.8s ease-in-out infinite;box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 8%,transparent),0 10px 24px color-mix(in srgb,var(--accent) 12%,transparent)}
+.completion-stat .global-ring-inner{animation:metric-core-float 5.1s ease-in-out infinite;box-shadow:inset 0 0 0 1px #a795fc2e}
+.completion-stat.day-all-complete .global-ring{animation:all-ring-aura 3.5s ease-in-out infinite,metric-orb-float 5.8s ease-in-out infinite}
+.completion-stat.day-all-just-finished .global-ring{animation:all-ring-bloom 1.2s var(--ease-spring) both,metric-orb-float 5.8s 1.2s ease-in-out infinite}
+@keyframes metric-orb-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes metric-core-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.012)}}
+@keyframes metric-flame-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes metric-spark-drift{0%,100%{transform:translateY(0) scale(.92);opacity:.78}50%{transform:translateY(-4px) scale(1.08);opacity:1}}
+@media (max-width:540px){
+  .completion-stat .global-ring{animation-duration:5.2s}
+  .stats .streak-stat-flame{animation-duration:4.2s}
+}
+@media(prefers-reduced-motion:reduce){
+  .stats .streak-stat-flame,.stats .orb-twinkle-a,.stats .orb-twinkle-b,.completion-stat .global-ring,.completion-stat .global-ring-inner{animation:none!important}
+}
