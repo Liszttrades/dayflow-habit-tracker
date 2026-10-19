@@ -14,7 +14,28 @@
   <meta property="og:image" content="https://liszttrades.github.io/dayflow-habit-tracker/og-dayflow.png" />
   <meta property="og:url" content="https://liszttrades.github.io/dayflow-habit-tracker/" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="stylesheet" href="./style.css?v=20261019conf1">
+  <link rel="stylesheet" href="./style.css?v=20261019skeleton1">
+  <script>
+    // Show placeholders only if startup is actually taking time. Never delay real content.
+    (function(){
+      const root=document.documentElement;
+      try { if(JSON.parse(localStorage.getItem('dayflow_tracker_v2')||'{}').theme==='dark') root.classList.add('dfsk-initial-dark'); } catch (_) {}
+      let completed=false;
+      const showTimer=setTimeout(function(){
+        if(completed||document.body?.dataset.dayflowReady==='true') return;
+        if(root.classList.contains('dfsk-initial-dark')&&document.body)document.body.classList.add('dark');
+        root.classList.add('dfsk-show');
+      },220);
+      window.DayflowLoading={
+        complete:function(){
+          completed=true;clearTimeout(showTimer);
+          root.classList.remove('dfsk-show');
+          const skeleton=document.getElementById('dayflow-skeleton');
+          if(skeleton)skeleton.setAttribute('aria-hidden','true');
+        }
+      };
+    })();
+  </script>
 </head>
 <body>
   <div class="app" id="dayflow-app">
@@ -55,6 +76,59 @@
           <button class="primary-btn" id="header-add"><span data-icon="plus"></span><span>New habit</span></button>
         </div>
       </header>
+      <!-- Matches dashboard geometry; never blocks real content once Dayflow is ready. -->
+      <div class="dfsk-dashboard" id="dayflow-skeleton" aria-hidden="true">
+        <div class="dfsk-hero">
+          <div class="dfsk-hero-copy">
+            <div class="dfsk-shape dfsk-eyebrow"></div>
+            <div class="dfsk-shape dfsk-headline"></div>
+            <div class="dfsk-shape dfsk-subtitle"></div>
+          </div>
+          <div class="dfsk-shape dfsk-day-nav"></div>
+        </div>
+        <div class="dfsk-stats">
+          <div class="dfsk-card dfsk-stat">
+            <div class="dfsk-stat-copy"><div class="dfsk-shape dfsk-label"></div><div class="dfsk-shape dfsk-number"></div><div class="dfsk-shape dfsk-short"></div></div>
+            <div class="dfsk-shape dfsk-ring"></div>
+          </div>
+          <div class="dfsk-card dfsk-stat">
+            <div class="dfsk-stat-copy"><div class="dfsk-shape dfsk-label"></div><div class="dfsk-shape dfsk-number"></div><div class="dfsk-shape dfsk-short"></div></div>
+            <div class="dfsk-shape dfsk-ring"></div>
+          </div>
+          <div class="dfsk-card dfsk-stat">
+            <div class="dfsk-stat-copy"><div class="dfsk-shape dfsk-label"></div><div class="dfsk-shape dfsk-number"></div><div class="dfsk-shape dfsk-short"></div><div class="dfsk-shape dfsk-progress-line"></div></div>
+            <div class="dfsk-shape dfsk-ring"></div>
+          </div>
+        </div>
+        <div class="dfsk-body-grid">
+          <div class="dfsk-card dfsk-habits">
+            <div class="dfsk-habit-heading"><div class="dfsk-shape dfsk-heading"></div><div class="dfsk-shape dfsk-action"></div></div>
+            <div class="dfsk-shape dfsk-subhead"></div>
+            <div class="dfsk-filters"><div class="dfsk-shape dfsk-pill"></div><div class="dfsk-shape dfsk-pill"></div><div class="dfsk-shape dfsk-pill"></div><div class="dfsk-shape dfsk-search"></div></div>
+            <div class="dfsk-habit-rows">
+              <div class="dfsk-habit-row"><div class="dfsk-shape dfsk-icon-circle"></div><div class="dfsk-row-copy"><div class="dfsk-shape dfsk-row-title"></div><div class="dfsk-shape dfsk-row-subtitle"></div><div class="dfsk-shape dfsk-row-progress"></div></div><div class="dfsk-shape dfsk-row-button"></div></div>
+              <div class="dfsk-habit-row"><div class="dfsk-shape dfsk-icon-circle"></div><div class="dfsk-row-copy"><div class="dfsk-shape dfsk-row-title"></div><div class="dfsk-shape dfsk-row-subtitle"></div><div class="dfsk-shape dfsk-row-progress"></div></div><div class="dfsk-shape dfsk-row-button"></div></div>
+              <div class="dfsk-habit-row"><div class="dfsk-shape dfsk-icon-circle"></div><div class="dfsk-row-copy"><div class="dfsk-shape dfsk-row-title"></div><div class="dfsk-shape dfsk-row-subtitle"></div><div class="dfsk-shape dfsk-row-progress"></div></div><div class="dfsk-shape dfsk-row-button"></div></div>
+              <div class="dfsk-habit-row"><div class="dfsk-shape dfsk-icon-circle"></div><div class="dfsk-row-copy"><div class="dfsk-shape dfsk-row-title"></div><div class="dfsk-shape dfsk-row-subtitle"></div><div class="dfsk-shape dfsk-row-progress"></div></div><div class="dfsk-shape dfsk-row-button"></div></div>
+              <div class="dfsk-habit-row"><div class="dfsk-shape dfsk-icon-circle"></div><div class="dfsk-row-copy"><div class="dfsk-shape dfsk-row-title"></div><div class="dfsk-shape dfsk-row-subtitle"></div><div class="dfsk-shape dfsk-row-progress"></div></div><div class="dfsk-shape dfsk-row-button"></div></div>
+            </div>
+          </div>
+          <div class="dfsk-rail">
+            <div class="dfsk-card dfsk-calendar"><div class="dfsk-shape dfsk-heading"></div><div class="dfsk-shape dfsk-month"></div>
+              <div class="dfsk-calendar-days">
+                <span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span>
+                <span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span>
+                <span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span>
+                <span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span>
+                <span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span>
+              </div>
+            </div>
+            <div class="dfsk-card dfsk-weekly"><div class="dfsk-shape dfsk-heading"></div><div class="dfsk-shape dfsk-number"></div>
+              <div class="dfsk-week-bars"><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span><span class="dfsk-shape"></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="dash" id="overview">
         <section class="hero">
           <div><div class="eyebrow"><span class="point"></span> YOUR PERSONAL SPACE</div><h1 id="hero-title">Make today count <span aria-hidden="true">✦</span></h1><p id="hero-subtitle">Keep showing up. Every small step is a win.</p></div>
@@ -292,11 +366,11 @@
   </div>
   <script>
     window.setTimeout(function(){
-      if(document.body.dataset.dayflowReady!=='true') document.getElementById('dayflow-loading-error')?.classList.remove('hidden');
+      if(document.body.dataset.dayflowReady!=='true'){ window.DayflowLoading?.complete(); document.getElementById('dayflow-loading-error')?.classList.remove('hidden'); }
     },5500);
   </script>
   <script src="./config.js?v=20261016r2" defer></script>
-  <script src="./script.js?v=20261019conf1" defer></script>
+  <script src="./script.js?v=20261019skeleton1" defer></script>
   <script src="./cloud.js?v=20261016r2" defer></script>
 </body>
 </html>

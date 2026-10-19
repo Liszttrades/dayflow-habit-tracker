@@ -906,5 +906,6 @@
     // Rings, bars and weekly columns now fill through their normal render paths.
     syncAwards(false);setTheme(state.theme);render();
     document.body.dataset.dayflowReady='true';
+    window.DayflowLoading?.complete();
     })();
   

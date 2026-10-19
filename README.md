@@ -21,3 +21,6 @@ Cloud sync still requires a separately configured Supabase project. The cloud cr
 
 ### Confirmation dialogs (merged update)
 Custom Dayflow confirmation dialogs replace native browser popups for archiving habits, deleting custom categories, resetting Dayflow, clearing sample progress, and importing backups. Archiving still preserves history and supports restoring from Archive Inbox. The existing storage key, cloud configuration, scheduling, ring animations, and other features remain unchanged.
+
+## Skeleton loading
+Dayflow shows subtle dashboard-shaped placeholders **only if initial startup is still pending after 220 ms**. Actual data is never delayed. The placeholders match the overview metrics, habit list, calendar and weekly chart, then vanish immediately after the local app finishes rendering. The existing >5s load-error message takes precedence if initialization fails. Reduced-motion preferences disable shimmer. This is a local startup loader, not a fake cloud-sync indicator.
