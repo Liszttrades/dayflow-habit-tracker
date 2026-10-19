@@ -14,7 +14,7 @@
   <meta property="og:image" content="https://liszttrades.github.io/dayflow-habit-tracker/og-dayflow.png" />
   <meta property="og:url" content="https://liszttrades.github.io/dayflow-habit-tracker/" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="stylesheet" href="./style.css?v=20261019skeleton1">
+  <link rel="stylesheet" href="./style.css?v=20261019remind1">
   <script>
     // Show placeholders only if startup is actually taking time. Never delay real content.
     (function(){
@@ -310,6 +310,23 @@
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
       <div class="modal-header"><div><h2 id="settings-modal-title">Your settings</h2><p>Make Dayflow work the way you like.</p></div><button class="icon-button" id="settings-modal-close" aria-label="Close"><span data-icon="x"></span></button></div>
       <div class="settings-row"><div><strong>Dark mode</strong><p>A softer color palette for evening planning.</p></div><input class="toggle" id="settings-dark-toggle" type="checkbox" aria-label="Dark mode" /></div>
+      <div class="settings-row reminder-main-row">
+        <div><strong>Daily habit reminder</strong><p>Start your routine on time, with a gentle heads-up 5 minutes early.</p></div>
+        <input class="toggle" type="checkbox" id="dayflow-reminder-enabled" aria-label="Enable daily habit reminder">
+      </div>
+      <div class="dayflow-reminder-settings hidden" id="dayflow-reminder-controls">
+        <div class="dayflow-reminder-time-row">
+          <label for="dayflow-reminder-time">My daily start time</label>
+          <input id="dayflow-reminder-time" type="time" value="07:00" aria-describedby="dayflow-reminder-upcoming">
+        </div>
+        <div class="dayflow-reminder-next" id="dayflow-reminder-upcoming">Next alert: 6:55 AM · starts at 7:00 AM</div>
+        <div class="dayflow-reminder-actions">
+          <button type="button" class="secondary-btn" id="dayflow-reminder-preview">Try reminder</button>
+          <button type="button" class="secondary-btn" id="dayflow-reminder-permission" hidden>Enable browser alerts</button>
+        </div>
+      </div>
+      <p class="dayflow-reminder-status" id="dayflow-reminder-status" role="status" aria-live="polite">Off · Switch on for a reminder five minutes before your start time.</p>
+      <p class="dayflow-reminder-limits">For now, alerts work while Dayflow is open. Alerts when the app is fully closed require a push notification service.</p>
       <div class="settings-row"><div><strong>Optional cloud sync</strong><p id="cloud-status">Offline mode · progress is stored only in this browser.</p></div><span data-icon="shield" style="color:var(--accent)"></span></div>
       <div class="cloud-controls" id="cloud-controls">
         <label for="cloud-email">Email (for a private sign-in link)</label>
@@ -359,6 +376,12 @@
       </div>
     </section>
   </div>
+  <aside class="dayflow-reminder-alert hidden" id="dayflow-reminder-alert" aria-label="Daily habit reminder" role="status">
+    <div class="dayflow-reminder-alert-icon" aria-hidden="true">✦</div>
+    <div class="dayflow-reminder-alert-content"><strong id="dayflow-reminder-alert-title">Your habits are almost ready ✨</strong><p id="dayflow-reminder-alert-copy">Your routine begins in five minutes.</p>
+      <button type="button" id="dayflow-reminder-alert-open" class="dayflow-reminder-open">Open my habits <span aria-hidden="true">→</span></button></div>
+    <button type="button" class="dayflow-reminder-dismiss" id="dayflow-reminder-alert-dismiss" aria-label="Dismiss reminder">×</button>
+  </aside>
   <div id="effect-layer" class="effect-layer" aria-hidden="true"></div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div id="dayflow-loading-error" class="hidden" role="alert" style="position:fixed;bottom:20px;left:20px;right:20px;max-width:580px;margin:auto;z-index:10000;background:#2c2541;color:white;border:1px solid #aa9aff;padding:15px 18px;border-radius:14px;box-shadow:0 12px 38px #0006;font:600 14px/1.5 system-ui">
@@ -372,5 +395,6 @@
   <script src="./config.js?v=20261016r2" defer></script>
   <script src="./script.js?v=20261019skeleton1" defer></script>
   <script src="./cloud.js?v=20261016r2" defer></script>
+  <script src="./reminders.js?v=20261019remind1" defer></script>
 </body>
 </html>

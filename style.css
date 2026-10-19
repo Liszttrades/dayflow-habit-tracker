@@ -1116,3 +1116,37 @@ html.dfsk-initial-dark.dfsk-show .dfsk-shape{background-color:var(--dfsk-fill);b
 @media(max-width:540px){.dfsk-dashboard{left:14px;right:14px;top:64px}.dfsk-hero{align-items:flex-start;flex-direction:column;gap:15px;padding-top:24px}.dfsk-day-nav{height:39px;width:127px}.dfsk-stats{grid-template-columns:1fr 1fr;gap:9px}.dfsk-stat{height:142px;padding:14px;border-radius:16px}.dfsk-stat:first-child{grid-column:1/-1}.dfsk-stat:not(:first-child) .dfsk-ring{height:53px;width:53px;flex-basis:53px}.dfsk-stat:not(:first-child) .dfsk-short{display:none}.dfsk-stat-copy{gap:11px}.dfsk-body-grid{gap:14px}.dfsk-rail{grid-template-columns:1fr}.dfsk-habits,.dfsk-calendar,.dfsk-weekly{padding:18px 13px}.dfsk-habit-row{gap:9px}.dfsk-icon-circle{height:46px;width:46px;flex-basis:46px}.dfsk-row-button{width:38px}.dfsk-search{width:86px}.dfsk-pill{width:46px}.dfsk-pill:nth-child(2){width:34px}.dfsk-pill:nth-child(3){width:39px}}
 @media(prefers-reduced-motion:reduce){html.dfsk-show .dfsk-shape{animation:none;background-image:none!important}}
 @media(max-width:540px){.dfsk-hero-copy{width:100%}}
+
+/* Daily reminder controls — calm, native-feeling and compatible with both Dayflow themes. */
+.dayflow-reminder-settings{border:1px solid var(--border);border-radius:16px;background:var(--surface-alt);padding:15px;margin-top:13px;display:grid;gap:12px}
+.dayflow-reminder-settings.hidden{display:none!important}
+.dayflow-reminder-time-row{display:flex;align-items:center;justify-content:space-between;gap:15px}
+.dayflow-reminder-time-row label{font-size:12.5px;font-weight:750;color:var(--ink)}
+.dayflow-reminder-time-row input{width:136px;min-height:44px;max-width:48%;font-family:inherit;font-weight:700;font-size:15px;line-height:1.2;color:var(--ink);color-scheme:light;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:9px 10px;text-align:center;outline:none;transition:border-color .18s,box-shadow .18s}
+.dayflow-reminder-time-row input:focus-visible{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 17%,transparent)}
+body.dark .dayflow-reminder-time-row input{color-scheme:dark}
+.dayflow-reminder-next{color:var(--accent-deep);font-size:12.5px;font-weight:750;letter-spacing:-.01em}
+.dayflow-reminder-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.dayflow-reminder-actions .secondary-btn{min-height:40px;padding:9px 13px}
+.dayflow-reminder-status{margin:10px 0 0;color:var(--ink-muted);font-size:12px;line-height:1.5}
+.dayflow-reminder-limits{margin:4px 0 17px;color:var(--ink-light);font-size:11px;line-height:1.5;max-width:470px}
+.dayflow-reminder-alert{position:fixed;bottom:24px;right:24px;z-index:160;width:min(390px,calc(100vw - 32px));display:flex;align-items:flex-start;gap:12px;background:var(--surface);color:var(--ink);border:1px solid var(--border);border-radius:20px;padding:17px;box-shadow:0 18px 60px rgba(28,20,80,.19)}
+.dayflow-reminder-alert.hidden{display:none!important}
+.dayflow-reminder-alert.dayflow-reminder-reveal{animation:dayflow-reminder-arrive .38s cubic-bezier(.19,.85,.23,1) both}
+.dayflow-reminder-alert-icon{height:39px;width:39px;flex:none;border-radius:14px;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);font-size:22px}
+.dayflow-reminder-alert-content{min-width:0;flex:1}
+.dayflow-reminder-alert-content strong{font-size:14px;letter-spacing:-.02em;line-height:1.25}
+.dayflow-reminder-alert-content p{margin:6px 0 9px;color:var(--ink-muted);font-size:12px;line-height:1.5}
+.dayflow-reminder-open{background:transparent;border:0;color:var(--accent);font-weight:800;font-size:12px;padding:5px 0;cursor:pointer}
+.dayflow-reminder-open:hover{text-decoration:underline}
+.dayflow-reminder-dismiss{font:400 21px/1 inherit;color:var(--ink-muted);background:transparent;border:0;flex:none;width:28px;height:28px;cursor:pointer;border-radius:8px}
+.dayflow-reminder-dismiss:hover{background:var(--surface-alt);color:var(--ink)}
+@keyframes dayflow-reminder-arrive{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:540px){.dayflow-reminder-alert{bottom:16px;right:16px}.dayflow-reminder-time-row label{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.dayflow-reminder-alert.dayflow-reminder-reveal{animation:none}}
+.dayflow-reminder-settings [hidden]{display:none!important}
+/* Keep the reminder preview button visually consistent in dark mode. */
+.dayflow-reminder-actions .secondary-btn{background:var(--surface);color:var(--ink);border-color:var(--border);box-shadow:none}
+.dayflow-reminder-actions .secondary-btn:hover{background:var(--accent-soft);color:var(--accent-deep);border-color:color-mix(in srgb,var(--accent) 36%,var(--border))}
+body.dark .dayflow-reminder-actions .secondary-btn{background:#2b2c40;color:#e5e2fb;border-color:#45435d}
+body.dark .dayflow-reminder-actions .secondary-btn:hover{background:#383053;color:#f2edff;border-color:#8070b8}

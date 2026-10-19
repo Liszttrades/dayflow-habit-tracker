@@ -24,3 +24,15 @@ Custom Dayflow confirmation dialogs replace native browser popups for archiving 
 
 ## Skeleton loading
 Dayflow shows subtle dashboard-shaped placeholders **only if initial startup is still pending after 220 ms**. Actual data is never delayed. The placeholders match the overview metrics, habit list, calendar and weekly chart, then vanish immediately after the local app finishes rendering. The existing >5s load-error message takes precedence if initialization fails. Reduced-motion preferences disable shimmer. This is a local startup loader, not a fake cloud-sync indicator.
+
+## Daily reminder feature
+
+- In **Settings → Daily habit reminder**, turn the toggle on and choose a daily **start time** (default: **7:00 AM**).
+- Dayflow shows the notification time **5 minutes beforehand** (e.g., **6:55 AM** for a **7:00 AM** start).
+- Select **Try reminder** to see a live preview. Grant browser notification permission if prompted to receive browser-level alerts.
+- Your reminder setting is saved locally in the same browser under `dayflow_daily_reminder_v1`; habit data storage, cloud setup, schedules, and archives were not modified.
+- Reminders are checked while Dayflow is running. Browser tabs may be throttled, so delivery may not be exact; this implementation **cannot notify users when all Dayflow tabs are closed**. Reliable background notifications will require a real web-push backend and service worker (plus appropriate user permission). On some mobile browsers, the installed app and supported push infrastructure are also required.
+- The preview and scheduling use the device's local time; no user data is transmitted by the reminders module. Reminder preferences are device-specific and are not included in habit-data JSON backups.
+
+### Deployment
+Upload **all files**, including the new `reminders.js`, to the root of your GitHub repository. Do not upload the ZIP itself. Export a habit backup before replacing the files.
