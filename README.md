@@ -17,3 +17,7 @@ This is the complete GitHub Pages-ready release. Upload all files in this folder
 4. Do **not** upload this ZIP as-is to GitHub Pages; upload the extracted files.
 
 Cloud sync still requires a separately configured Supabase project. The cloud credentials here are placeholders. Browser-local habits remain local unless configured and signed in.
+
+
+### Confirmation dialogs (merged update)
+Custom Dayflow confirmation dialogs replace native browser popups for archiving habits, deleting custom categories, resetting Dayflow, clearing sample progress, and importing backups. Archiving still preserves history and supports restoring from Archive Inbox. The existing storage key, cloud configuration, scheduling, ring animations, and other features remain unchanged.

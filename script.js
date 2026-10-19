@@ -333,6 +333,41 @@
     }
     function setTheme(value){state.theme=value==='dark'?'dark':'light';document.body.classList.toggle('dark',state.theme==='dark');$('#theme-toggle-icon').innerHTML=icon(state.theme==='dark'?'sun':'moon');$('#settings-dark-toggle').checked=state.theme==='dark';save()}
     function toast(message){const el=$('#toast');el.textContent=message;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2800)}
+    // A single reusable dialog replaces browser-controlled confirm() popups.
+    let activeConfirmation=null;
+    function askConfirm(options){
+      if(activeConfirmation)return Promise.resolve(false);
+      return new Promise(resolve=>{
+        const kind=options.kind||'neutral';
+        const overlay=$('#confirm-modal-backdrop');
+        const panel=overlay.querySelector('.dayflow-confirm');
+        const previouslyFocused=document.activeElement;
+        activeConfirmation={resolve,previouslyFocused};
+        panel.dataset.kind=kind;
+        $('#confirm-modal-label').textContent=options.label||'Confirm action';
+        $('#confirm-modal-title').textContent=options.title||'Are you sure?';
+        $('#confirm-modal-message').textContent=options.message||'';
+        const note=$('#confirm-modal-note');
+        note.textContent=options.note||'';
+        note.classList.toggle('hidden',!options.note);
+        $('#confirm-modal-symbol').innerHTML=icon(options.icon|| (kind==='archive'?'checklist':kind==='danger'?'trash':'sparkles'),24);
+        $('#confirm-modal-accept-icon').innerHTML=icon(options.icon|| (kind==='archive'?'checklist':kind==='danger'?'trash':'check'),16);
+        $('#confirm-modal-accept-label').textContent=options.confirmLabel||'Confirm';
+        $('#confirm-modal-cancel').textContent=options.cancelLabel||'Cancel';
+        $('#confirm-modal-accept').dataset.kind=kind;
+        overlay.classList.remove('hidden');
+        $('#confirm-modal-cancel').focus();
+      });
+    }
+    function finishConfirm(accepted=false){
+      const current=activeConfirmation;
+      if(!current)return;
+      activeConfirmation=null;
+      $('#confirm-modal-backdrop').classList.add('hidden');
+      if(current.previouslyFocused?.isConnected)current.previouslyFocused.focus({preventScroll:true});
+      current.resolve(accepted);
+    }
+
     function renderHeader(){
       const diff=dayDiff(selectedDate,today()),isToday=diff===0;
       $('#top-date-label').textContent=formatDay(today());
@@ -589,11 +624,16 @@
       host.innerHTML=matches.length?matches.map(item=>`<button type="button" class="category-icon-choice ${chosenCategoryIcon===item.id?'active':''}" data-category-icon="${escapeHTML(item.id)}" title="${escapeHTML(item.label)}" aria-label="${escapeHTML(item.label)} icon" aria-pressed="${chosenCategoryIcon===item.id}">${livelyIcon(item.id,22)}</button>`).join(''):'<div class="category-icon-empty">No matching icons</div>';
       $('#category-icon-count').textContent=`${matches.length} icons`;
     }
-    function removeCategory(name){
+    async function removeCategory(name){
       if(!state.categories.includes(name)||DEFAULT_CATEGORIES.includes(name))return;
       const assigned=state.habits.filter(h=>h.category===name).length;
-      const question=assigned?`Delete “${name}”? ${assigned} ${assigned===1?'habit uses':'habits use'} this category. ${assigned===1?'It':'They'} will be moved to Lifestyle; no progress will be lost.`:`Delete your “${name}” category?`;
-      if(!window.confirm(question))return;
+      const ok=await askConfirm({
+        kind:'danger',icon:'trash',label:'Delete category',title:`Delete “${name}”?`,
+        message:assigned?`This category will be deleted. The ${assigned} ${assigned===1?'habit assigned to it':'habits assigned to it'} will move to Lifestyle.`:'This category will be removed from your choices.',
+        note:assigned?'Your habit progress and history will be kept.':'You can create the category again later.',
+        confirmLabel:'Delete category',cancelLabel:'Keep category'
+      });
+      if(!ok)return;
       // Reassign first so mergedCategories does not recreate the deleted name.
       for(const h of state.habits)if(h.category===name)h.category='Lifestyle';
       state.categories=state.categories.filter(c=>c!==name);delete state.categoryIcons[name];
@@ -641,7 +681,11 @@
     }
     function closeModal(selector){$(selector).classList.add('hidden');if(selector==='#habit-modal-backdrop')setCategoryMenu(false);editingId=null}
     function makeId(){return 'h'+Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
-    function startFresh(){if(!confirm('Clear the example progress and start from zero? Your habit list will stay the same.'))return;state.logs={};state.demo=false;state.awards=[];save();render();toast('Fresh start! Your dashboard is all yours.');}
+    async function startFresh(){
+      const ok=await askConfirm({kind:'neutral',icon:'sparkles',label:'Start fresh',title:'Clear sample progress?',message:'Remove the example check-ins and start with an empty activity history.',note:'Your existing habit list will stay the same.',confirmLabel:'Start fresh',cancelLabel:'Keep examples'});
+      if(!ok)return;
+      state.logs={};state.demo=false;state.awards=[];save();render();toast('Fresh start! Your dashboard is all yours.');
+    }
     function showSettings(){closeMobile();$('#settings-dark-toggle').checked=state.theme==='dark';$('#settings-modal-backdrop').classList.remove('hidden')}
     function showArchiveInbox(){closeMobile();renderArchived();$('#archive-modal-backdrop').classList.remove('hidden')}
     function readScheduleEditor(){
@@ -780,10 +824,19 @@
       }
       toast(wasEditing?'Habit updated!':'New habit added!');
     });
-    $('#delete-habit').addEventListener('click',()=>{
+    $('#delete-habit').addEventListener('click',async ()=>{
       if(!editingId)return;const target=state.habits.find(h=>h.id===editingId);if(!target)return;
-      if(!confirm(`Archive "${target.name}"? It will disappear from upcoming days but its history will be preserved. You can restore it in Settings.`))return;
-      snapshotPast();target.archivedAt=dateKey(today());save();closeModal('#habit-modal-backdrop');render();toast('Habit archived. Previous results preserved.');
+      const id=target.id;
+      const ok=await askConfirm({
+        kind:'archive',icon:'checklist',label:'Archive habit',title:`Archive “${target.name}”?`,
+        message:'This habit will stop appearing on upcoming days. Your progress and history will stay saved.',
+        note:'You can bring it back any time from Archive Inbox.',
+        confirmLabel:'Archive habit',cancelLabel:'Keep habit'
+      });
+      if(!ok)return;
+      const habit=state.habits.find(h=>h.id===id&&!h.archivedAt);
+      if(!habit)return;
+      snapshotPast();habit.archivedAt=dateKey(today());save();closeModal('#habit-modal-backdrop');render();toast('Habit archived. Restore it from Archive Inbox.');
     });
     $('#settings-open').addEventListener('click',showSettings);
     $('#settings-modal-close').addEventListener('click',()=>closeModal('#settings-modal-backdrop'));
@@ -802,8 +855,13 @@
     $('#celebration-close').addEventListener('click',closeCelebration);
     $('#celebration-go').addEventListener('click',closeCelebration);
     $('#celebration-backdrop').addEventListener('click',closeCelebration);
-    $('#reset-data').addEventListener('click',()=>{
-      if(!confirm('Reset all habits and progress? This cannot be undone unless you have a backup.'))return;
+    $('#confirm-modal-close').addEventListener('click',()=>finishConfirm(false));
+    $('#confirm-modal-cancel').addEventListener('click',()=>finishConfirm(false));
+    $('#confirm-modal-accept').addEventListener('click',()=>finishConfirm(true));
+    $('#confirm-modal-backdrop').addEventListener('click',e=>{if(e.target===e.currentTarget)finishConfirm(false)});
+    $('#reset-data').addEventListener('click',async ()=>{
+      const ok=await askConfirm({kind:'danger',icon:'trash',label:'Reset Dayflow',title:'Reset all Dayflow data?',message:'Your habits, check-ins, history, and earned streaks in this browser will be cleared.',note:'This cannot be undone unless you exported a backup.',confirmLabel:'Reset Dayflow',cancelLabel:'Keep my data'});
+      if(!ok)return;
       const theme=state.theme;state=hydrate({habits:structuredClone(defaultHabits),categories:[...DEFAULT_CATEGORIES],categoryIcons:{...DEFAULT_CATEGORY_ICONS},logs:{},snapshots:{},demo:false,theme,awards:[],modelVersion:2});
       filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Tracker reset. A fresh chapter begins!');
     });
@@ -819,13 +877,26 @@
         const data=JSON.parse(await file.text());
         if(!Array.isArray(data.habits)||!data.logs||typeof data.logs!=='object'||data.habits.length>500)throw Error('Not a valid Dayflow backup.');
         const cleaned=data.habits.map((h,i)=>({id:String(h.id||'import'+i).slice(0,100),name:String(h.name||'Habit').slice(0,48),category:cleanCategoryName(h.category)||'Lifestyle',icon:iconChoices.includes(h.icon)?h.icon:'sparkles',schedule:validSchedule(h.schedule),createdAt:h.createdAt,archivedAt:h.archivedAt,color:colorChoices.includes(h.color)?h.color:colorChoices[0],goal:clamp(Math.round(validNumber(h.goal)),1,100000),step:clamp(Math.round(validNumber(h.step)),1,100000),unit:normalizeUnitInput(String(h.unit||'time'))}));
-        if(!confirm('Import this backup? Your current habits and history will be replaced.'))return;
+        const ok=await askConfirm({kind:'neutral',icon:'upload',label:'Import backup',title:'Replace your saved data?',message:'Importing this backup will replace the habits and progress currently saved in this browser.',note:'Export your current data first if you might want to return to it.',confirmLabel:'Import backup',cancelLabel:'Keep current data'});
+        if(!ok)return;
         const cleanLogs={};for(const [key,log] of Object.entries(data.logs)){if(!/^\d{4}-\d{2}-\d{2}$/.test(key)||!log||typeof log!=='object')continue;cleanLogs[key]={};for(const h of cleaned){const n=Number(log[h.id]);if(Number.isFinite(n))cleanLogs[key][h.id]=clamp(n,0,h.goal)}}
         const categories=mergedCategories(data.categories,cleaned);state=hydrate({habits:cleaned,categories,categoryIcons:normalizeCategoryIcons(data.categoryIcons,categories),logs:cleanLogs,snapshots:data.snapshots,modelVersion:data.modelVersion,theme:data.theme==='dark'?'dark':'light',demo:false,awards:Array.isArray(data.awards)?data.awards.filter(v=>MILESTONES.some(t=>t.days===v)):[]});syncAwards(false);setTheme(state.theme);filter='All';search='';$('#habit-search').value='';save();changeDate(today());closeModal('#settings-modal-backdrop');toast('Backup imported successfully!');
       }catch(err){toast(err.message||'Could not read backup.')}finally{e.target.value=''}
     });
-    document.querySelectorAll('.modal-backdrop').forEach(backdrop=>backdrop.addEventListener('click',e=>{if(e.target===backdrop)backdrop.classList.add('hidden')}));
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#habit-category-trigger').getAttribute('aria-expanded')==='true'){setCategoryMenu(false);$('#habit-category-trigger').focus();return;}closeCustomSelects();closeCelebration();$('#habit-modal-backdrop').classList.add('hidden');$('#settings-modal-backdrop').classList.add('hidden');$('#archive-modal-backdrop').classList.add('hidden');closeMobile()}if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&$('#habit-modal-backdrop').classList.contains('hidden')){e.preventDefault();$('#habit-search').focus()}});
+    document.querySelectorAll('.modal-backdrop:not(#confirm-modal-backdrop)').forEach(backdrop=>backdrop.addEventListener('click',e=>{if(e.target===backdrop)backdrop.classList.add('hidden')}));
+    document.addEventListener('keydown',e=>{
+      if(activeConfirmation){
+        if(e.key==='Escape'){e.preventDefault();e.stopPropagation();finishConfirm(false);return;}
+        if(e.key==='Tab'){
+          const modal=$('#confirm-modal-backdrop');
+          const buttons=[...modal.querySelectorAll('button:not(:disabled)')].filter(b=>b.getClientRects().length);
+          const first=buttons[0],last=buttons[buttons.length-1];
+          if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}
+          else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}
+        }
+        return;
+      }
+      if(e.key==='Escape'){if($('#habit-category-trigger').getAttribute('aria-expanded')==='true'){setCategoryMenu(false);$('#habit-category-trigger').focus();return;}closeCustomSelects();closeCelebration();$('#habit-modal-backdrop').classList.add('hidden');$('#settings-modal-backdrop').classList.add('hidden');$('#archive-modal-backdrop').classList.add('hidden');closeMobile()}if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)&&$('#habit-modal-backdrop').classList.contains('hidden')){e.preventDefault();$('#habit-search').focus()}});
     $('#menu-toggle').addEventListener('click',()=>{$('#sidebar').classList.add('open');$('#mobile-scrim').classList.add('show')});
     $('#mobile-scrim').addEventListener('click',closeMobile);
     document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>{

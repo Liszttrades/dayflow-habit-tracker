@@ -1015,3 +1015,35 @@ body.dark .schedule-caption{color:#b5b3cd}
   .habit-newly-created{animation:none!important}
   .habit-ring,.habit-meter .small-fill,#global-ring,#streak-visual,#weekly-orb,#weekly-progress-track{transition:none!important}
 }
+
+
+/* Dayflow confirmation sheet: unified archive/delete/reset/import prompts. */
+.dayflow-confirm-backdrop{z-index:500;background:rgba(15,16,31,.54);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.dayflow-confirm{max-width:430px;padding:25px 26px 24px;border:1px solid var(--border);border-radius:24px;background:var(--surface);box-shadow:0 26px 85px rgba(14,16,35,.25);animation:dayflow-confirm-enter .26s cubic-bezier(.22,1,.36,1) both;overflow:auto}
+.dayflow-confirm-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+.dayflow-confirm-symbol{width:52px;height:52px;display:grid;place-items:center;border:1px solid rgba(124,100,239,.14);border-radius:17px;color:#8069eb;background:#8069eb16}
+.dayflow-confirm-symbol svg{width:24px;height:24px}
+.dayflow-confirm[data-kind="archive"] .dayflow-confirm-symbol{color:#8069eb;background:#8069eb14;border-color:#8069eb25}
+.dayflow-confirm[data-kind="danger"] .dayflow-confirm-symbol{color:#d95868;background:#d9586813;border-color:#d9586827}
+.dayflow-confirm[data-kind="neutral"] .dayflow-confirm-symbol{color:#8069eb;background:#8069eb14}
+.dayflow-confirm-label{display:block;margin-bottom:9px;font-weight:780;font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--accent)}
+.dayflow-confirm[data-kind="danger"] .dayflow-confirm-label{color:#d65b69}
+.dayflow-confirm h2{font-size:24px;letter-spacing:-.75px;font-weight:790;line-height:1.2;color:var(--ink);margin:0 0 10px}
+.dayflow-confirm p{font-size:14px;line-height:1.55;color:var(--ink-muted);margin:0}
+.dayflow-confirm .dayflow-confirm-note{margin-top:17px;border:1px solid var(--border);border-radius:14px;background:var(--surface-alt);padding:12px 13px;font-size:12.5px;color:var(--ink-muted)}
+.dayflow-confirm-actions{margin-top:25px;display:flex;justify-content:flex-end;gap:10px}
+.dayflow-confirm-actions button{min-height:44px;min-width:120px;border-radius:13px;padding:11px 16px;font-size:13px;font-weight:730;transition:transform .16s ease,box-shadow .16s ease,background .16s ease}
+.dayflow-confirm-actions button:active{transform:scale(.975)}
+.dayflow-confirm-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#7662e9;color:white;border:1px solid transparent;box-shadow:0 5px 14px rgba(118,98,233,.17)}
+.dayflow-confirm-primary:hover{background:#6551df;box-shadow:0 8px 20px rgba(118,98,233,.2)}
+.dayflow-confirm-primary[data-kind="danger"]{background:#bc4458;box-shadow:0 5px 14px rgba(188,68,88,.12)}
+.dayflow-confirm-primary[data-kind="danger"]:hover{background:#a9354a}
+.dayflow-confirm-primary svg{width:16px;height:16px}
+body.dark .dayflow-confirm{background:var(--surface);border-color:#3d4054;box-shadow:0 28px 88px rgba(1,3,13,.6)}
+body.dark .dayflow-confirm-symbol{background:#a598ff17}
+body.dark .dayflow-confirm .dayflow-confirm-note{color:#b4b7ce;background:#262837}
+body.dark .dayflow-confirm[data-kind="danger"] .dayflow-confirm-label{color:#f1a0b0}
+body.dark .dayflow-confirm[data-kind="danger"] .dayflow-confirm-symbol{color:#f0a0af;background:#de65751b;border-color:#de657542}
+@keyframes dayflow-confirm-enter{from{opacity:0;transform:translateY(11px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:540px){.dayflow-confirm{padding:23px 20px;max-height:min(92dvh,640px)}.dayflow-confirm-actions{flex-direction:column-reverse}.dayflow-confirm-actions button{width:100%}}
+@media(prefers-reduced-motion:reduce){.dayflow-confirm{animation:none!important}.dayflow-confirm-actions button{transition:none!important}}
