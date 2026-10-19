@@ -36,3 +36,11 @@ Dayflow shows subtle dashboard-shaped placeholders **only if initial startup is 
 
 ### Deployment
 Upload **all files**, including the new `reminders.js`, to the root of your GitHub repository. Do not upload the ZIP itself. Export a habit backup before replacing the files.
+
+## Custom daily reminder time picker (October 2026)
+- Replaced the browser-native time dropdown with an inline Dayflow-style time editor in Settings.
+- Choose any hour and minute (typed or via the +/− controls), plus AM/PM, then Save time or Cancel.
+- Displays the five-minute-early reminder before saving. For instance, start at 7:00 AM → reminder at 6:55 AM.
+- Uses the **same** `dayflow_daily_reminder_v1` browser storage key and existing notification scheduler; no user data migration or reset is required.
+- Supports keyboard navigation, Escape cancellation, compact mobile layout, both themes, and reduced-motion preferences.
+- This changes the time-selection interface only. As before, browser reminders run while Dayflow is open, not as guaranteed background push alerts when the app is fully closed.
